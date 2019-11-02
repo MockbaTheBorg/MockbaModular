@@ -89,15 +89,15 @@ struct DividahWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Inputs
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.1, 46.0)), module, Dividah::_CLOCK_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(5.1, 57.0)), module, Dividah::_RESET_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 46.0)), module, Dividah::_CLOCK_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, Dividah::_RESET_INPUT));
 
 		// Outputs
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(5.0, 68.0)), module, Dividah::_BY2_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(5.1, 79.0)), module, Dividah::_BY4_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(5.1, 90.0)), module, Dividah::_BY8_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(5.1, 101.0)), module, Dividah::_BY16_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(5.1, 112.0)), module, Dividah::_BY32_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.0, 68.0)), module, Dividah::_BY2_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, Dividah::_BY4_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Dividah::_BY8_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Dividah::_BY16_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, Dividah::_BY32_OUTPUT));
 	}
 };
 
