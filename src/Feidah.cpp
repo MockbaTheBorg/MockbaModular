@@ -42,11 +42,13 @@ struct FeidahWidget : ModuleWidget {
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.011, 50.234)), module, Feidah::_KNOB_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, Feidah::_KNOB_PARAM));
 
-		// Ports
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.011, 95.772)), module, Feidah::_VOLTAGE_INPUT));
-		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.011, 106.383)), module, Feidah::_VOLTAGE_OUTPUT));
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Feidah::_VOLTAGE_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Feidah::_VOLTAGE_OUTPUT));
 	}
 };
 

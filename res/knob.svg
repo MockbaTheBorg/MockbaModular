@@ -8,9 +8,9 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    version="1.1"
-   width="16"
-   height="16"
-   viewBox="0 0 16 16"
+   width="8.4666662mm"
+   height="8.4666662mm"
+   viewBox="0 0 32 31.999999"
    id="svg10"
    sodipodi:docname="knob.svg"
    inkscape:version="0.92.3 (2405546, 2018-03-11)">
@@ -42,8 +42,8 @@
      id="namedview12"
      showgrid="true"
      inkscape:zoom="20.85965"
-     inkscape:cx="23.364145"
-     inkscape:cy="1.3677405"
+     inkscape:cx="15.573985"
+     inkscape:cy="16.708364"
      inkscape:window-x="-8"
      inkscape:window-y="22"
      inkscape:window-maximized="1"
@@ -51,14 +51,22 @@
      inkscape:snap-nodes="false"
      inkscape:snap-others="false"
      inkscape:snap-bbox="true"
-     inkscape:snap-bbox-midpoints="true">
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:document-units="mm"
+     units="mm"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
     <inkscape:grid
        type="xygrid"
-       id="grid829" />
+       id="grid829"
+       originx="-2.0000001e-007"
+       originy="1.7410357e-006" />
   </sodipodi:namedview>
   <g
      id="g9727"
-     transform="matrix(1.3333333,0,0,1.3333333,-2.6666664,-2.6666664)">
+     transform="matrix(2.6666666,0,0,2.6666666,-5.3333332,-5.3333332)">
     <path
        id="circle4"
        d="M 14,8 A 6,6 0 0 1 8,14 6,6 0 0 1 2,8 6,6 0 0 1 8,2 6,6 0 0 1 14,8 Z"

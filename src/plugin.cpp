@@ -12,6 +12,8 @@ void init(Plugin* p) {
 	// Add modules here
 	// p->addModel(modelMyModule);
 	p->addModel(modelFeidah);
+	p->addModel(modelDividah);
+	p->addModel(modelCountah);
 	p->addModel(modelUDPClockSlave);
 	p->addModel(modelUDPClockMaster);
 

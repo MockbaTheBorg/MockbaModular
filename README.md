@@ -10,6 +10,12 @@ I believe these modules might prove useful to others. Please feel free to use th
 Small fader (attenuator) module I use to control volume levels, etc.<br>
 This is actually the first module I made, evah!
 
+## Dividah
+Simple clock divider based on inverse counting, so all the clock outputs will start in sync.
+
+## Countah
+Simple binary counter/divider, can be used as divider but the clock outputs won't start in sync.
+
 ## UDPClockMaster (Mastah)
 Clock/Reset UDP broadcaster.<br>
 This module receives a clock and a reset signals as inputs and then broadcasts them via UDP port 7000, to allow for synchronization of other VCV Rack instances running on different computers at the same network.<br>

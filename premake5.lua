@@ -1,3 +1,8 @@
+-- MockbaModular by Mockba the Borg
+-- Premake Script
+-- Requires premake5.exe to be somewhere reachable via PATH
+-- https://premake.github.io/
+--
 workspace "MockbaVS"
 	location "VStudio"
 	configurations { "Release" }

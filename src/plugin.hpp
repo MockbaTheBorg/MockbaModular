@@ -1,5 +1,13 @@
+// VCV Rack plugins by Mockba the Borg
+
 #pragma once
 #include <rack.hpp>
+
+#ifdef _WIN32
+	#ifndef ARCH_WIN
+		#define ARCH_WIN                  // Just to make Visual Studio happy
+	#endif
+#endif
 
 #ifdef ARCH_WIN
 	#include <winsock2.h>                 // Needed for all Winsock stuff
@@ -39,5 +47,7 @@ struct _Port : SVGPort {
 // Declare each Model, defined in each module source file
 // extern Model* modelMyModule;
 extern Model* modelFeidah;
+extern Model* modelDividah;
+extern Model* modelCountah;
 extern Model* modelUDPClockSlave;
 extern Model* modelUDPClockMaster;
