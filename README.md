@@ -31,14 +31,13 @@ The little status light illuminates red if there's any issue establishing the UD
 
 ## Building
 Just follow the VCV recommendations to build plugins.<br>
-I have provided a premake setup I use, which creates a VSTudio solution/project to allow editing the source code on Visual Studio. Just double click on setup.cmd to create the solution or on clean.cmd to clean up.<br>
+I have provided a premake5 lua setup I use, which creates a VSTudio solution/project to allow editing the source code on Visual Studio. Just double click on setup.cmd to create the solution or on clean.cmd to clean it up.<br>
 The Visual Studio solution and project files are created on a VStudio sub folder.<br>
-Build still needs to be done via Makefile on the msys2 shell. I have provided also a make.sh script I (have to) use to execute the make command.
+Build still needs to be done via Makefile on the msys2 shell (for Windows) or the respective methods for Linux and Mac. I have provided also a make.sh script I (have to) use to execute the make command.
 
 ## ToDo list for the UDP modules
 . Add some offset adjust knob to Slavah to compensate for network delay.<br>
-. Add an option to set the broadcast IP address of Mastah manually.<br>
-. Add a "channel" selector to have different UDP channels (ports).
+. Add an option to set the broadcast IP address of Mastah manually.
 
 ## Issues
 Sometimes the Slave won't start when added, if this is the case then close the patch and open it again. This normally fixes the issue.<br>
