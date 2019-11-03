@@ -38,6 +38,13 @@ struct _SnapKnob : _Knob {
 	}
 };
 
+struct _Selector : _SnapKnob {
+	_Selector() {
+		minAngle = -0.40 * M_PI;
+		maxAngle = 0.40 * M_PI;
+	}
+};
+
 struct _Port : SVGPort {
 	_Port() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/port.svg")));
@@ -49,5 +56,6 @@ struct _Port : SVGPort {
 extern Model* modelFeidah;
 extern Model* modelDividah;
 extern Model* modelCountah;
+extern Model* modelSelectah;
 extern Model* modelUDPClockSlave;
 extern Model* modelUDPClockMaster;

@@ -38,6 +38,14 @@
       ]
     },
     {
+      "slug": "Selectah",
+      "name": "Selectah",
+      "description": "Simple 4 to 1 selector",
+      "tags": [
+        "Utility"
+      ]
+    },
+    {
       "slug": "UDPClockMaster",
       "name": "Mastah",
       "description": "UDP Clock Synchronizer (Master)",

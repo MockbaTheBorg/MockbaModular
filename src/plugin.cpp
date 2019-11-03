@@ -14,6 +14,7 @@ void init(Plugin* p) {
 	p->addModel(modelFeidah);
 	p->addModel(modelDividah);
 	p->addModel(modelCountah);
+	p->addModel(modelSelectah);
 	p->addModel(modelUDPClockSlave);
 	p->addModel(modelUDPClockMaster);
 
