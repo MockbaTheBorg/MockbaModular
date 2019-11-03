@@ -16,6 +16,9 @@ Simple clock divider based on inverse counting, so all the clock outputs will st
 ## Countah
 Simple binary counter/divider, can be used as divider but the clock outputs won't start in sync.
 
+## Selectah
+Simple 4 to 1 selector, used to select waves from a 4 output oscillator.
+
 ## UDPClockMaster (Mastah)
 Clock/Reset UDP broadcaster.<br>
 This module receives a clock and a reset signals as inputs and then broadcasts them via UDP port 7000, to allow for synchronization of other VCV Rack instances running on different computers at the same network.<br>
