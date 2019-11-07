@@ -32,5 +32,6 @@ if _ACTION == "clean" then
 	os.rmdir("build");
 	os.rmdir("dep");
 	os.rmdir("dist");
+	os.rmdir("tmp");
 	os.remove("plugin.dll");
 end

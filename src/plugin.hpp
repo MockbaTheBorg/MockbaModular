@@ -24,6 +24,12 @@ using namespace rack;
 // Declare the Plugin, defined in plugin.cpp
 extern Plugin* pluginInstance;
 
+struct _Screw : SvgScrew {
+	_Screw() {
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/screw.svg")));
+	}
+};
+
 struct _Knob : RoundKnob {
 	_Knob() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/knob.svg")));

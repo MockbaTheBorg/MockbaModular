@@ -5,6 +5,43 @@
 #define PORT_NUM     7000             // Listening Port = PORT_NUM + _CHANNEL_PARAM
 #define IP_ADDR      "192.168.1.255"  // IP address to broadcast to (must be added to setup later)
 
+void saveIPAddress(const char* IPAddress) {
+	json_t* settingsJ = json_object();
+	json_object_set_new(settingsJ, "IPAddress", json_string(IPAddress));
+	std::string settingsFilename = asset::user("MockbaModular.json");
+	FILE* file = fopen(settingsFilename.c_str(), "w");
+	if (file) {
+		json_dumpf(settingsJ, file, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
+		fclose(file);
+	}
+	json_decref(settingsJ);
+}
+
+const char* loadIPAddress() {
+	const char* ret = IP_ADDR;
+	std::string settingsFilename = asset::user("MockbaModular.json");
+	FILE* file = fopen(settingsFilename.c_str(), "r");
+	if (!file) {
+		saveIPAddress(IP_ADDR);
+		return IP_ADDR;
+	}
+	json_error_t error;
+	json_t* settingsJ = json_loadf(file, 0, &error);
+	if (!settingsJ) {
+		// invalid setting json file
+		fclose(file);
+		saveIPAddress(IP_ADDR);
+		return IP_ADDR;
+	}
+	json_t* IPAddressJ = json_object_get(settingsJ, "IPAddress");
+	if (IPAddressJ)
+		ret = json_string_value(IPAddressJ);
+
+	fclose(file);
+	json_decref(settingsJ);
+	return ret;
+}
+
 struct UDPClockMaster : Module {
 	enum ParamIds {
 		NUM_PARAMS
@@ -67,9 +104,9 @@ void UDPClockMaster::onAdd() {
 	}
 
 	// Fill-in server socket's address information
-	server_addr.sin_family = AF_INET;                    // Address family to use
-	server_addr.sin_port = htons(PORT_NUM);              // Port num to use
-	server_addr.sin_addr.s_addr = inet_addr(IP_ADDR); // Need this for Broadcast
+	server_addr.sin_family = AF_INET;                         // Address family to use
+	server_addr.sin_port = htons(PORT_NUM);                   // Port num to use
+	server_addr.sin_addr.s_addr = inet_addr(loadIPAddress()); // Need this for Broadcast
 
 	// Set socket to use MAC-level broadcast
 	iOptVal = 1;
@@ -126,8 +163,8 @@ struct UDPClockMasterWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/UDPClockMaster.svg")));
 
 		// Screws
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Lights
 		addChild(createLightCentered<SmallLight<RedLight>>(mm2px(Vec(5.070, 86.116)), module, UDPClockMaster::_STATUS_LIGHT));

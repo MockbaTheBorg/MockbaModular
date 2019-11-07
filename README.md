@@ -23,7 +23,8 @@ Simple 4 to 1 selector, used to select waves from a 4 output oscillator.
 Clock/Reset UDP broadcaster.<br>
 This module receives a clock and a reset signals as inputs and then broadcasts them via UDP port 7000, to allow for synchronization of other VCV Rack instances running on different computers at the same network.<br>
 Best results are achieved if using Ethernet, not Wifi.<br>
-Right now it broadcasts to 192.168.1.255 only, one would need to change this in the source code and recompile if they want to use a different IP broadcast address.<br>
+By default it broadcasts to 192.168.1.255 only. If a different network is needed, one would need to change this in a JSON file that is created on Rack's documents folder when the plugin is first loaded.<br>
+From that moment on the plugin will always load the default IP address from the JSON file.<br>
 The little status light illuminates red if there's any issue establishing the UDP socket.
 
 ## UDPClockSlave (Slavah)
@@ -40,7 +41,6 @@ Build still needs to be done via Makefile on the msys2 shell (for Windows) or th
 
 ## ToDo list for the UDP modules
 . Add some offset adjust knob to Slavah to compensate for network delay.<br>
-. Add an option to set the broadcast IP address of Mastah manually.
 
 ## Issues
 Sometimes the Slave won't start when added, if this is the case then close the patch and open it again. This normally fixes the issue.<br>

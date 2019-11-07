@@ -140,8 +140,8 @@ struct UDPClockSlaveWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/UDPClockSlave.svg")));
 
 		// Screws
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Buttons
 		addChild(createParam<LEDButton>(mm2px(Vec(2.0, 60.0)), module, UDPClockSlave::_RESTART_BUTTON));
