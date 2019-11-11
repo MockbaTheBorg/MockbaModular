@@ -35,6 +35,8 @@ struct UDPClockSlave : Module {
 	socklen_t            addr_len;        // Internet address length
 	char                 in_buf[1024];    // Input buffer for data
 	int                  retcode;         // Return code
+	int                  iOptVal;         // Socket option value
+	int                  iOptLen;         // Socket option length
 
 	bool                 running;         // Runs only if the socket succeeds
 	bool                 was0;
@@ -76,6 +78,12 @@ void UDPClockSlave::onAdd() {
 	server_addr.sin_family = AF_INET;                 // Address family to use
 	server_addr.sin_port = htons(PORT_NUM);           // Port number to use
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);  // Listen on any IP address
+
+	// Set socket to reuse address, so multiple slavahs can be added
+	iOptVal = 1;
+	iOptLen = sizeof(int);
+	setsockopt(server_s, SOL_SOCKET, SO_REUSEADDR, (char*)&iOptVal, iOptLen);
+
 	retcode = bind(server_s, (struct sockaddr*) & server_addr,
 		sizeof(server_addr));
 	if (retcode < 0)
