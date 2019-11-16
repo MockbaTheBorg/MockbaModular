@@ -6,9 +6,15 @@ I believe these modules might prove useful to others. Please feel free to use th
 
 ![Alt text](./screenshot.png)
 
+## Blank
+A simple logo blank just because everyone else seems to have one.
+
 ## Feidah
 Small fader (attenuator) module I use to control volume levels, etc.<br>
 This is actually the first module I made, evah!
+
+## Mixah
+Small two signal mixer (adder) for voltages.
 
 ## Dividah
 Simple clock divider based on inverse counting, so all the clock outputs will start in sync.

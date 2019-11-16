@@ -11,12 +11,16 @@
 
 #ifdef ARCH_WIN
 	#include <winsock2.h>                 // Needed for all Winsock stuff
+	#define NOSOCKET INVALID_SOCKET
+	#define NOBIND SOCKET_ERROR
 #else
 	#include <sys/select.h>               // Needed for sockets stuff
 	#include <sys/socket.h>               // Needed for sockets stuff
 	#include <arpa/inet.h>                // Needed for sockets stuff
 	#include <fcntl.h>                    // Needed for sockets stuff
 	#include <unistd.h>
+	#define NOSOCKET -1
+	#define NOBIND -1
 #endif
 
 using namespace rack;
@@ -59,7 +63,9 @@ struct _Port : SVGPort {
 
 // Declare each Model, defined in each module source file
 // extern Model* modelMyModule;
+extern Model* modelBlank;
 extern Model* modelFeidah;
+extern Model* modelMixah;
 extern Model* modelDividah;
 extern Model* modelCountah;
 extern Model* modelSelectah;

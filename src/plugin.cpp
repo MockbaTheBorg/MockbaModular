@@ -11,7 +11,9 @@ void init(Plugin* p) {
 
 	// Add modules here
 	// p->addModel(modelMyModule);
+	p->addModel(modelBlank);
 	p->addModel(modelFeidah);
+	p->addModel(modelMixah);
 	p->addModel(modelDividah);
 	p->addModel(modelCountah);
 	p->addModel(modelSelectah);
