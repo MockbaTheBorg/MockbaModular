@@ -39,6 +39,11 @@ This module receives the UDP broadcasts on port 7000 and generates corresponding
 The idea here is to have one Slavah (only one) running on each VCV computer that is going to be synced to the master.<br>
 The little status light illuminates red if there's any issue establishing the UDP socket.
 
+![Alt text](./screenshot2.png)
+
+## CZ Series
+These modules recreates some of the classic Casio CZ series oscillators.
+
 ## Building
 Just follow the VCV recommendations to build plugins.<br>
 I have provided a premake5 lua setup I use, which creates a VSTudio solution/project to allow editing the source code on Visual Studio. Just double click on setup.cmd to create the solution or on clean.cmd to clean it up.<br>

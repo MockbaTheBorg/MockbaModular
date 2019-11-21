@@ -17,6 +17,10 @@ void init(Plugin* p) {
 	p->addModel(modelDividah);
 	p->addModel(modelCountah);
 	p->addModel(modelSelectah);
+	p->addModel(modelCZSaw);
+	p->addModel(modelCZSquare);
+	p->addModel(modelCZPulse);
+	p->addModel(modelCZReso);
 	p->addModel(modelUDPClockSlave);
 	p->addModel(modelUDPClockMaster);
 
