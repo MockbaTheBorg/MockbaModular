@@ -1,13 +1,5 @@
 #include "plugin.hpp"
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
 struct CZSaw : Module {
 	enum ParamIds {
 		_FREQ_PARAM,
@@ -58,12 +50,12 @@ void CZSaw::process(const ProcessArgs& args) {
 	if (phase >= 1.0f)
 		phase -= 1.0f;
 	// Calculate the shape index
-	float shape = max((params[_SHAPE_PARAM].getValue() + inputs[_MODS_INPUT].getVoltage()) * 0.05f, 0.001f);
+	float shape = max((10 - clamp(params[_SHAPE_PARAM].getValue() + inputs[_MODS_INPUT].getVoltage(), 0.0f, 10.0f)) * 0.05f, 0.001f);
 	// Calculate the wave
 	float a = phase * ((0.5f - shape) / shape);
 	float b = (-1 * phase + 1) * ((0.5f - shape) / (1 - shape));
 	float m = phase + min(a, b);
-	float out = cos(m * (2 * M_PI));
+	float out = cos(m * (M_2PI));
 
 	outputs[_WAVE_OUTPUT].setVoltage(out * 5);
 }

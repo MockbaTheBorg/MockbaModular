@@ -23,6 +23,18 @@
 	#define NOBIND -1
 #endif
 
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef M_2PI
+#define M_2PI    6.28318530717958647692
+#endif
+
 using namespace rack;
 
 // Declare the Plugin, defined in plugin.cpp

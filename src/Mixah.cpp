@@ -8,6 +8,7 @@ struct Mixah : Module {
 		NUM_PARAMS
 	};
 	enum InputIds {
+		_VCA_INPUT,
 		_A_INPUT,
 		_B_INPUT,
 		NUM_INPUTS
@@ -29,7 +30,12 @@ struct Mixah : Module {
 		float mix = params[_KNOB_PARAM].getValue();
 		float outa = inputs[_A_INPUT].getVoltage() * (1 - mix);
 		float outb = inputs[_B_INPUT].getVoltage() * mix;
-		float out = outa + outb;
+		float out;
+		if (inputs[_VCA_INPUT].isConnected()) {
+			out = (outa + outb) * (inputs[_VCA_INPUT].getVoltage() / 10);
+		} else {
+			out = outa + outb;
+		}
 		out = clamp(out, -10.0f, 10.0f);
 		outputs[_MIX_OUTPUT].setVoltage(out);
 	}
@@ -48,11 +54,12 @@ struct MixahWidget : ModuleWidget {
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, Mixah::_KNOB_PARAM));
 
 		// Inputs
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, Mixah::_A_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Mixah::_B_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Mixah::_VCA_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Mixah::_A_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Mixah::_B_INPUT));
 
 		// Outputs
-		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Mixah::_MIX_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, Mixah::_MIX_OUTPUT));
 	}
 };
 

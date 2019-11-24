@@ -1,13 +1,5 @@
 #include "plugin.hpp"
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
-
 struct CZPulse : Module {
 	enum ParamIds {
 		_FREQ_PARAM,
@@ -58,13 +50,13 @@ void CZPulse::process(const ProcessArgs& args) {
 	if (phase >= 1.0f)
 		phase -= 1.0f;
 	// Calculate the shape index
-	float shape = (params[_SHAPE_PARAM].getValue() + inputs[_MODS_INPUT].getVoltage()) * 0.1f;
+	float shape = clamp(params[_SHAPE_PARAM].getValue() + inputs[_MODS_INPUT].getVoltage(), 0.0f, 10.0f) * 0.1f;
 	// Calculate the wave
 	float l = sgn(phase - 0.5f);
 	float a = eucMod(phase * l * 2, 1.0f);
 	float b = (-1 * a + 1) * (shape / (1 - shape));
 	float m = 0.5 * (l * (a - min(a, b)));
-	float out = cos(m * (2 * M_PI));
+	float out = cos(m * (M_2PI));
 
 	outputs[_WAVE_OUTPUT].setVoltage(out * 5);
 }

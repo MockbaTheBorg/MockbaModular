@@ -8,6 +8,7 @@ struct Feidah : Module {
 		NUM_PARAMS
 	};
 	enum InputIds {
+		_VCA_INPUT,
 		_VOLTAGE_INPUT,
 		NUM_INPUTS
 	};
@@ -26,7 +27,12 @@ struct Feidah : Module {
 
 	void process(const ProcessArgs& args) override {
 		float atten1 = params[_KNOB_PARAM].getValue();
-		float out1 = inputs[_VOLTAGE_INPUT].getVoltage() * atten1;
+		float out1;
+		if (inputs[_VCA_INPUT].isConnected()) {
+			out1 = inputs[_VOLTAGE_INPUT].getVoltage() * atten1 * (inputs[_VCA_INPUT].getVoltage() / 10);
+		} else {
+			out1 = inputs[_VOLTAGE_INPUT].getVoltage() * atten1;
+		}
 		out1 = clamp(out1, -10.0f, 10.0f);
 		outputs[_VOLTAGE_OUTPUT].setVoltage(out1);
 	}
@@ -45,6 +51,7 @@ struct FeidahWidget : ModuleWidget {
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, Feidah::_KNOB_PARAM));
 
 		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Feidah::_VCA_INPUT));
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Feidah::_VOLTAGE_INPUT));
 
 		// Outputs
