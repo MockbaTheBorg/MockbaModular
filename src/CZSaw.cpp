@@ -14,7 +14,7 @@ struct _Saw {
 	}
 
 	void setShape(T shapeV) {
-		shape = simd::fmax(shapeV * 0.05f, 0.005f);
+		shape = simd::clamp(simd::fmax((10 - shapeV) * 0.05f, 0.005f), 0.0f, 10.0f);
 	}
 
 	void process(float delta) {
@@ -89,7 +89,7 @@ void CZSaw::process(const ProcessArgs& args) {
 	float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
 	freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
 	// Get the shape parameter
-	float shapeParam = 10 - params[_SHAPE_PARAM].getValue();
+	float shapeParam = params[_SHAPE_PARAM].getValue();
 	// Iterate over each channel
 	int channels = max(inputs[_MODF_INPUT].getChannels(), 1);
 	for (int c = 0; c < channels; c += 4) {
