@@ -35,7 +35,13 @@
 #define M_2PI    6.28318530717958647692
 #endif
 
+template <typename T>
+T expCurve(T x) {
+	return (3 + x * (-13 + 5 * x)) / (3 + 2 * x);
+}
+
 using namespace rack;
+using simd::float_4;
 
 // Declare the Plugin, defined in plugin.cpp
 extern Plugin* pluginInstance;

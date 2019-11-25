@@ -8,10 +8,10 @@ struct Selectah : Module {
 		NUM_PARAMS
 	};
 	enum InputIds {
-		_IN_A_INPUT,
-		_IN_B_INPUT,
-		_IN_C_INPUT,
-		_IN_D_INPUT,
+		_A_INPUT,
+		_B_INPUT,
+		_C_INPUT,
+		_D_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -44,19 +44,24 @@ void Selectah::onReset() {
 
 void Selectah::process(const ProcessArgs& args) {
 	int selection = int(params[_SELECT_PARAM].getValue());
-	switch (selection) {
-	case 0:
-		outputs[_SELECTED_OUTPUT].setVoltage(inputs[_IN_A_INPUT].getVoltage());
-		break;
-	case 1:
-		outputs[_SELECTED_OUTPUT].setVoltage(inputs[_IN_B_INPUT].getVoltage());
-		break;
-	case 2:
-		outputs[_SELECTED_OUTPUT].setVoltage(inputs[_IN_C_INPUT].getVoltage());
-		break;
-	default:
-		outputs[_SELECTED_OUTPUT].setVoltage(inputs[_IN_D_INPUT].getVoltage());
+	// Iterate over each channel
+	int channels = max(max(max(max(inputs[_A_INPUT].getChannels(), inputs[_B_INPUT].getChannels()), inputs[_C_INPUT].getChannels()), inputs[_D_INPUT].getChannels()), 1);
+	for (int c = 0; c < channels; c++) {
+		switch (selection) {
+		case 0:
+			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_A_INPUT].getVoltage(c), c);
+			break;
+		case 1:
+			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_B_INPUT].getVoltage(c), c);
+			break;
+		case 2:
+			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_C_INPUT].getVoltage(c), c);
+			break;
+		default:
+			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_D_INPUT].getVoltage(c), c);
+		}
 	}
+	outputs[_SELECTED_OUTPUT].setChannels(channels);
 }
 
 struct SelectahWidget : ModuleWidget {
@@ -72,10 +77,10 @@ struct SelectahWidget : ModuleWidget {
 		addParam(createParamCentered<_Selector>(mm2px(Vec(5.1, 46.0)), module, Selectah::_SELECT_PARAM));
 
 		// Inputs
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Selectah::_IN_A_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, Selectah::_IN_B_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Selectah::_IN_C_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Selectah::_IN_D_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Selectah::_A_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, Selectah::_B_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Selectah::_C_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Selectah::_D_INPUT));
 
 		// Outputs
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, Selectah::_SELECTED_OUTPUT));

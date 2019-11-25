@@ -1,7 +1,7 @@
 {
   "slug": "MockbaModular",
   "name": "Mockba Modular",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "license": "MIT",
   "brand": "Mockba Modular",
   "author": "Mockba the Borg",
@@ -26,7 +26,7 @@
       "name": "Feidah",
       "description": "Simple signal fader",
       "tags": [
-        "Attenuator"
+        "Attenuator, Polyphonic"
       ]
     },
     {
@@ -34,7 +34,7 @@
       "name": "Mixah",
       "description": "Simple two signal mixer",
       "tags": [
-        "mixer"
+        "Mixer, Polyphonic"
       ]
     },
     {
@@ -58,7 +58,7 @@
       "name": "Selectah",
       "description": "Simple 4 to 1 selector",
       "tags": [
-        "Utility"
+        "Utility, Polyphonic"
       ]
     },
     {
@@ -66,7 +66,7 @@
       "name": "CZSaw",
       "description": "Simple CZ style SAW oscillator",
       "tags": [
-        "Oscillator"
+        "Oscillator, Polyphonic"
       ]
     },
     {
@@ -74,7 +74,7 @@
       "name": "CZSquare",
       "description": "Simple CZ style SQUARE oscillator",
       "tags": [
-        "Oscillator"
+        "Oscillator, Polyphonic"
       ]
     },
     {
@@ -82,7 +82,7 @@
       "name": "CZPulse",
       "description": "Simple CZ style PULSE oscillator",
       "tags": [
-        "Oscillator"
+        "Oscillator, Polyphonic"
       ]
     },
     {
@@ -90,7 +90,7 @@
       "name": "CZReso",
       "description": "Simple CZ style RESO oscillator",
       "tags": [
-        "Oscillator"
+        "Oscillator, Polyphonic"
       ]
     },
     {

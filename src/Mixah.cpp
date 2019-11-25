@@ -8,9 +8,9 @@ struct Mixah : Module {
 		NUM_PARAMS
 	};
 	enum InputIds {
-		_VCA_INPUT,
 		_A_INPUT,
 		_B_INPUT,
+		_VCA_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -26,20 +26,27 @@ struct Mixah : Module {
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.5f, "");
 	}
 
-	void process(const ProcessArgs& args) override {
-		float mix = params[_KNOB_PARAM].getValue();
-		float outa = inputs[_A_INPUT].getVoltage() * (1 - mix);
-		float outb = inputs[_B_INPUT].getVoltage() * mix;
-		float out;
+	void process(const ProcessArgs& args) override;
+};
+
+void Mixah::process(const ProcessArgs& args) {
+	float mix = params[_KNOB_PARAM].getValue();
+	float out;
+	// Iterate over each channel
+	int channels = max(max(inputs[_A_INPUT].getChannels(), inputs[_B_INPUT].getChannels()), 1);
+	for (int c = 0; c < channels; c++) {
+		float outa = inputs[_A_INPUT].getVoltage(c) * (1 - mix);
+		float outb = inputs[_B_INPUT].getVoltage(c) * mix;
 		if (inputs[_VCA_INPUT].isConnected()) {
-			out = (outa + outb) * (inputs[_VCA_INPUT].getVoltage() / 10);
+			out = (outa + outb) * (inputs[_VCA_INPUT].getVoltage(c) / 10);
 		} else {
 			out = outa + outb;
 		}
 		out = clamp(out, -10.0f, 10.0f);
-		outputs[_MIX_OUTPUT].setVoltage(out);
+		outputs[_MIX_OUTPUT].setVoltage(out, c);
 	}
-};
+	outputs[_MIX_OUTPUT].setChannels(channels);
+}
 
 struct MixahWidget : ModuleWidget {
 	MixahWidget(Mixah* module) {

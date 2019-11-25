@@ -8,8 +8,8 @@ struct Feidah : Module {
 		NUM_PARAMS
 	};
 	enum InputIds {
-		_VCA_INPUT,
 		_VOLTAGE_INPUT,
+		_VCA_INPUT,
 		NUM_INPUTS
 	};
 	enum OutputIds {
@@ -25,18 +25,25 @@ struct Feidah : Module {
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.f, "");
 	}
 
-	void process(const ProcessArgs& args) override {
-		float atten1 = params[_KNOB_PARAM].getValue();
-		float out1;
-		if (inputs[_VCA_INPUT].isConnected()) {
-			out1 = inputs[_VOLTAGE_INPUT].getVoltage() * atten1 * (inputs[_VCA_INPUT].getVoltage() / 10);
-		} else {
-			out1 = inputs[_VOLTAGE_INPUT].getVoltage() * atten1;
-		}
-		out1 = clamp(out1, -10.0f, 10.0f);
-		outputs[_VOLTAGE_OUTPUT].setVoltage(out1);
-	}
+	void process(const ProcessArgs& args) override;
 };
+
+void Feidah::process(const ProcessArgs& args) {
+	float atten = params[_KNOB_PARAM].getValue();
+	float out;
+	// Iterate over each channel
+	int channels = max(inputs[_VOLTAGE_INPUT].getChannels(), 1);
+	for (int c = 0; c < channels; c++) {
+		if (inputs[_VCA_INPUT].isConnected()) {
+			out = inputs[_VOLTAGE_INPUT].getVoltage(c) * atten * (inputs[_VCA_INPUT].getVoltage(c) / 10);
+		} else {
+			out = inputs[_VOLTAGE_INPUT].getVoltage(c) * atten;
+		}
+		out = clamp(out, -10.0f, 10.0f);
+		outputs[_VOLTAGE_OUTPUT].setVoltage(out, c);
+	}
+	outputs[_VOLTAGE_OUTPUT].setChannels(channels);
+}
 
 struct FeidahWidget : ModuleWidget {
 	FeidahWidget(Feidah* module) {
