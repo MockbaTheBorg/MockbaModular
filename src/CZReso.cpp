@@ -66,7 +66,7 @@ struct CZReso : Module {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
-		configParam(_SHAPE_PARAM, 0.0f, 10.0f, 0.0f, "Shape", "%");
+		configParam(_SHAPE_PARAM, 0.0f, 10.0f, 0.0f, "Shape");
 	}
 
 	void onAdd() override;

@@ -27,20 +27,8 @@ struct Selectah : Module {
 		configParam(_SELECT_PARAM, 0.f, 3.f, 0.f, "");
 	}
 
-	void onAdd() override;
-
-	void onReset() override;
-
 	void process(const ProcessArgs& args) override;
 };
-
-void Selectah::onAdd() {
-	params[_SELECT_PARAM].setValue(0);
-}
-
-void Selectah::onReset() {
-	onAdd();
-}
 
 void Selectah::process(const ProcessArgs& args) {
 	int selection = int(params[_SELECT_PARAM].getValue());
