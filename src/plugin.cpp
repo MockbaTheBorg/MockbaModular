@@ -20,7 +20,11 @@ void init(Plugin* p) {
 	p->addModel(modelCZSaw);
 	p->addModel(modelCZSquare);
 	p->addModel(modelCZPulse);
-	p->addModel(modelCZReso);
+	p->addModel(modelCZDblSine);
+	p->addModel(modelCZSawPulse);
+	p->addModel(modelCZReso1);
+	p->addModel(modelCZReso2);
+	p->addModel(modelCZReso3);
 	p->addModel(modelUDPClockSlave);
 	p->addModel(modelUDPClockMaster);
 

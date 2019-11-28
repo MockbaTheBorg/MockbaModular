@@ -60,16 +60,12 @@ struct _Knob : RoundKnob {
 	}
 };
 
-struct _SnapKnob : _Knob {
-	_SnapKnob() {
-		snap = true;
-	}
-};
-
-struct _Selector : _SnapKnob {
+struct _Selector : RoundKnob {
 	_Selector() {
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/selector.svg")));
 		minAngle = -0.40 * M_PI;
 		maxAngle = 0.40 * M_PI;
+		snap = true;
 	}
 };
 
@@ -90,6 +86,10 @@ extern Model* modelSelectah;
 extern Model* modelCZSaw;
 extern Model* modelCZSquare;
 extern Model* modelCZPulse;
-extern Model* modelCZReso;
+extern Model* modelCZDblSine;
+extern Model* modelCZSawPulse;
+extern Model* modelCZReso1;
+extern Model* modelCZReso2;
+extern Model* modelCZReso3;
 extern Model* modelUDPClockSlave;
 extern Model* modelUDPClockMaster;

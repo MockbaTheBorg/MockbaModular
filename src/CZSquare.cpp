@@ -14,7 +14,7 @@ struct _Square {
 	}
 
 	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.0f, 10.0f) * 0.1f;
+		shape = simd::clamp(shapeV, 0.1f, 9.9f) * 0.1f;
 	}
 
 	void process(float delta) {

@@ -1,7 +1,7 @@
 #include "plugin.hpp"
 
 template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Saw {
+struct _Reso2 {
 	T freq;
 	T shape;
 	T phase = 0.0f;
@@ -14,7 +14,7 @@ struct _Saw {
 	}
 
 	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.1f, 9.9f) * 0.1f;
+		shape = simd::clamp(shapeV, 0.0f, 10.0f) * 0.1f;
 	}
 
 	void process(float delta) {
@@ -29,11 +29,9 @@ struct _Saw {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T d = 0.5f - (shape * 0.5f);
-		T a = phase * ((0.5f - d) / d);
-		T b = (-1.0f * phase + 1.0f) * ((0.5f - d) / (1.0f - d));
-		T m = phase + simd::fmin(a, b);
-		T v = simd::cos(m * (M_2PI));
+		T w = simd::fmin(2.0f - (phase * 2.0f), phase * 2.0f);
+		T m = phase * ((.0625 + shape) * 16.0f);
+		T v = w * simd::cos(m * (M_2PI));
 		return v;
 	}
 
@@ -42,7 +40,7 @@ struct _Saw {
 	}
 };
 
-struct CZSaw : Module {
+struct CZReso2 : Module {
 	enum ParamIds {
 		_FREQ_PARAM,
 		_FINE_PARAM,
@@ -62,9 +60,9 @@ struct CZSaw : Module {
 		NUM_LIGHTS
 	};
 
-	_Saw<16, 16, float_4> osc[4];
+	_Reso2<16, 16, float_4> osc[4];
 
-	CZSaw() {
+	CZReso2() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
@@ -78,14 +76,14 @@ struct CZSaw : Module {
 	void process(const ProcessArgs& args) override;
 };
 
-void CZSaw::onAdd() {
+void CZReso2::onAdd() {
 }
 
-void CZSaw::onReset() {
+void CZReso2::onReset() {
 	onAdd();
 }
 
-void CZSaw::process(const ProcessArgs& args) {
+void CZReso2::process(const ProcessArgs& args) {
 	// Get the frequency parameters
 	float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
 	freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
@@ -111,27 +109,27 @@ void CZSaw::process(const ProcessArgs& args) {
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }
 
-struct CZSawWidget : ModuleWidget {
-	CZSawWidget(CZSaw* module) {
+struct CZReso2Widget : ModuleWidget {
+	CZReso2Widget(CZReso2* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZSaw.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZReso2.svg")));
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, CZSaw::_FREQ_PARAM));
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, CZSaw::_FINE_PARAM));
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, CZSaw::_SHAPE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, CZReso2::_FREQ_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, CZReso2::_FINE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, CZReso2::_SHAPE_PARAM));
 
 		// Inputs
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, CZSaw::_MODF_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, CZSaw::_MODS_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, CZReso2::_MODF_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, CZReso2::_MODS_INPUT));
 
 		// Outputs
-		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, CZSaw::_WAVE_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, CZReso2::_WAVE_OUTPUT));
 	}
 };
 
-Model* modelCZSaw = createModel<CZSaw, CZSawWidget>("CZSaw");
+Model* modelCZReso2 = createModel<CZReso2, CZReso2Widget>("CZReso2");

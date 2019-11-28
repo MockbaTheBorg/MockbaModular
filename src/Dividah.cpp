@@ -93,7 +93,7 @@ struct DividahWidget : ModuleWidget {
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, Dividah::_RESET_INPUT));
 
 		// Outputs
-		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.0, 68.0)), module, Dividah::_BY2_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Dividah::_BY2_OUTPUT));
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, Dividah::_BY4_OUTPUT));
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Dividah::_BY8_OUTPUT));
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Dividah::_BY16_OUTPUT));

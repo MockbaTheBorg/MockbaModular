@@ -1,7 +1,7 @@
 #include "plugin.hpp"
 
 template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Reso {
+struct _DblSine {
 	T freq;
 	T shape;
 	T phase = 0.0f;
@@ -14,7 +14,7 @@ struct _Reso {
 	}
 
 	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.0f, 10.0f) * 0.1f;
+		shape = simd::clamp(shapeV, 0.1f, 9.9f) * 0.1f;
 	}
 
 	void process(float delta) {
@@ -29,9 +29,11 @@ struct _Reso {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T w = 1 - phase;
-		T m = phase * ((.0625 + shape) * 16);
-		T v = w * sin(m * (M_2PI));
+		T d = 0.5f - (shape * 0.5f);
+		T a = phase * ((0.5f - d) / d);
+		T b = (-1.0f * phase + 1.0f) * ((0.5f - d) / (1.0f - d));
+		T m = phase + simd::fmin(a, b);
+		T v = simd::cos(2.0f * m * (M_2PI));
 		return v;
 	}
 
@@ -40,7 +42,7 @@ struct _Reso {
 	}
 };
 
-struct CZReso : Module {
+struct CZDblSine : Module {
 	enum ParamIds {
 		_FREQ_PARAM,
 		_FINE_PARAM,
@@ -60,9 +62,9 @@ struct CZReso : Module {
 		NUM_LIGHTS
 	};
 
-	_Reso<16, 16, float_4> osc[4];
+	_DblSine<16, 16, float_4> osc[4];
 
-	CZReso() {
+	CZDblSine() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
@@ -76,14 +78,14 @@ struct CZReso : Module {
 	void process(const ProcessArgs& args) override;
 };
 
-void CZReso::onAdd() {
+void CZDblSine::onAdd() {
 }
 
-void CZReso::onReset() {
+void CZDblSine::onReset() {
 	onAdd();
 }
 
-void CZReso::process(const ProcessArgs& args) {
+void CZDblSine::process(const ProcessArgs& args) {
 	// Get the frequency parameters
 	float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
 	freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
@@ -109,27 +111,27 @@ void CZReso::process(const ProcessArgs& args) {
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }
 
-struct CZResoWidget : ModuleWidget {
-	CZResoWidget(CZReso* module) {
+struct CZDblSineWidget : ModuleWidget {
+	CZDblSineWidget(CZDblSine* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZReso.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZDblSine.svg")));
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
 		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, CZReso::_FREQ_PARAM));
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, CZReso::_FINE_PARAM));
-		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, CZReso::_SHAPE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, CZDblSine::_FREQ_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, CZDblSine::_FINE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, CZDblSine::_SHAPE_PARAM));
 
 		// Inputs
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, CZReso::_MODF_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, CZReso::_MODS_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, CZDblSine::_MODF_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, CZDblSine::_MODS_INPUT));
 
 		// Outputs
-		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, CZReso::_WAVE_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, CZDblSine::_WAVE_OUTPUT));
 	}
 };
 
-Model* modelCZReso = createModel<CZReso, CZResoWidget>("CZReso");
+Model* modelCZDblSine = createModel<CZDblSine, CZDblSineWidget>("CZDblSine");
