@@ -42,7 +42,7 @@ The little status light illuminates red if there's any issue establishing the UD
 # CZ Series
 ![Alt text](./screenshot2.png)
 
-These modules recreate some of the classic Casio CZ series oscillators.
+These modules recreate the classic Casio CZ series Phase Distortion oscillators.
 
 ## Building
 Just follow the VCV recommendations to build plugins.<br>
