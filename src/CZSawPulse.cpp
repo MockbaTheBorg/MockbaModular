@@ -29,11 +29,11 @@ struct _SawPulse {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T a = simd::fmod(phase * 2.0f, 2.0f);
-		T b = (-1.0f * a + 1.0f) * (shape / (1.0f - shape));
+		T a = -2.0f * phase + 2.0f;
+		T b = (-a + 1.0f) * (shape / (1.0f - shape));
 		T c = 0.5f * (a - simd::fmin(a, b));
 		T m = simd::fmin(c, phase);
-		T v = simd::cos(m * (M_2PI));
+		T v = simd::cos(m * M_2PI);
 		return v;
 	}
 

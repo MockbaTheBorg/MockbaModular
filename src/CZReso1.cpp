@@ -31,7 +31,7 @@ struct _Reso1 {
 		// Calculate the wave step
 		T w = 1.0f - phase;
 		T m = phase * ((.0625 + shape) * 16.0f);
-		T v = w * simd::sin(m * (M_2PI));
+		T v = simd::cos(m * M_2PI) * w + phase;
 		return v;
 	}
 

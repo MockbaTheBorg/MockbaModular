@@ -29,11 +29,11 @@ struct _Saw {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T d = 0.5f - (shape * 0.5f);
-		T a = phase * ((0.5f - d) / d);
-		T b = (-1.0f * phase + 1.0f) * ((0.5f - d) / (1.0f - d));
+		T l = 0.5f - (shape * 0.5f);
+		T a = phase * ((0.5f - l) / l);
+		T b = (-phase + 1.0f) * ((0.5f - l) / (1.0f - l));
 		T m = phase + simd::fmin(a, b);
-		T v = simd::cos(m * (M_2PI));
+		T v = simd::cos(m * M_2PI);
 		return v;
 	}
 

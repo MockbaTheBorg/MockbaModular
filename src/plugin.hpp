@@ -1,4 +1,4 @@
-// VCV Rack plugins by Mockba the Borg
+﻿// VCV Rack plugins by Mockba the Borg
 
 #pragma once
 #include <rack.hpp>
@@ -79,6 +79,7 @@ struct _Port : SVGPort {
 // extern Model* modelMyModule;
 extern Model* modelBlank;
 extern Model* modelFeidah;
+extern Model* modelFeidahS;
 extern Model* modelMixah;
 extern Model* modelDividah;
 extern Model* modelCountah;

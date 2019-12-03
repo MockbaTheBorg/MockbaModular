@@ -29,11 +29,11 @@ struct _Square {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T l = simd::sgn(phase - 0.5f);
+		T l = simd::sgn(0.5f - phase);
 		T a = simd::fmod(phase * 2.0f, 1.0f);
-		T b = (-1.0f * a + 1.0f) * (shape / (1.0f - shape));
+		T b = (-a + 1.0f) * (shape / (1.0f - shape));
 		T m = 0.5f * (a - simd::fmin(a, b));
-		T v = simd::cos(m * (M_2PI)) * l;
+		T v = simd::cos(m * M_2PI) * l;
 		return v;
 	}
 
