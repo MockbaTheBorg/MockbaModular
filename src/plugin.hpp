@@ -52,6 +52,12 @@ struct _Screw : SvgScrew {
 	}
 };
 
+struct _KnobTop : SvgScrew {
+	_KnobTop() {
+		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/knob2a.svg")));
+	}
+};
+
 struct _Knob : RoundKnob {
 	_Knob() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/knob.svg")));
@@ -66,6 +72,13 @@ struct _Selector : RoundKnob {
 		minAngle = -0.40 * M_PI;
 		maxAngle = 0.40 * M_PI;
 		snap = true;
+	}
+};
+
+struct _Hsw : SvgSwitch {
+	_Hsw() {
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_0.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_1.svg")));
 	}
 };
 
@@ -84,6 +97,7 @@ extern Model* modelMixah;
 extern Model* modelDividah;
 extern Model* modelCountah;
 extern Model* modelSelectah;
+extern Model* modelShapah;
 extern Model* modelCZSaw;
 extern Model* modelCZSquare;
 extern Model* modelCZPulse;
@@ -92,5 +106,14 @@ extern Model* modelCZSawPulse;
 extern Model* modelCZReso1;
 extern Model* modelCZReso2;
 extern Model* modelCZReso3;
+extern Model* modelComparator;
+extern Model* modelDualBUFFER;
+extern Model* modelDualNOT;
+extern Model* modelDualOR;
+extern Model* modelDualNOR;
+extern Model* modelDualAND;
+extern Model* modelDualNAND;
+extern Model* modelDualXOR;
+extern Model* modelDualXNOR;
 extern Model* modelUDPClockSlave;
 extern Model* modelUDPClockMaster;

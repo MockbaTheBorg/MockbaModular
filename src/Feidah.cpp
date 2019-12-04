@@ -39,7 +39,6 @@ void Feidah::process(const ProcessArgs& args) {
 		} else {
 			out = inputs[_VOLTAGE_INPUT].getVoltage(c) * atten;
 		}
-		out = clamp(out, -10.0f, 10.0f);
 		outputs[_VOLTAGE_OUTPUT].setVoltage(out, c);
 	}
 	outputs[_VOLTAGE_OUTPUT].setChannels(channels);

@@ -1,3 +1,5 @@
+// Casio CZ style Reso2 oscillator by Mockba the Borg
+
 #include "plugin.hpp"
 
 template <int OVERSAMPLE, int QUALITY, typename T>

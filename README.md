@@ -13,8 +13,11 @@ A simple logo blank just because everyone else seems to have one.
 Small fader (attenuator) module I use to control volume levels, etc.<br>
 This is actually the first module I made, evah!
 
+## FeidahS
+Small stereo fader module. Feidah's big brother.
+
 ## Mixah
-Small two signal mixer (adder) for voltages.
+Small two signal mixer (crossfader) for voltages.
 
 ## Dividah
 Simple clock divider based on inverse counting, so all the clock outputs will start in sync.
@@ -24,6 +27,9 @@ Simple binary counter/divider, can be used as divider but the clock outputs won'
 
 ## Selectah
 Simple 4 to 1 selector, used to select waves from a 4 output oscillator.
+
+## Shapah
+Simple envelope shaper with classic ADSR controls.
 
 ## UDPClockMaster (Mastah)
 Clock/Reset UDP broadcaster.<br>
@@ -42,7 +48,12 @@ The little status light illuminates red if there's any issue establishing the UD
 # CZ Series
 ![Alt text](./screenshot2.png)
 
-These modules recreate the classic Casio CZ series Phase Distortion oscillators.
+These modules precisely recreate the classic Casio CZ series Phase Distortion waveforms.
+
+# Logic Series
+![Alt text](./screenshot3.png)
+
+These modules implement multiple logic gates and functions.
 
 ## Building
 Just follow the VCV recommendations to build plugins.<br>

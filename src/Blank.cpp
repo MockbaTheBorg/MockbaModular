@@ -1,4 +1,4 @@
-// Blank
+// A blank, why not? by Mockba the Borg
 
 #include "plugin.hpp"
 

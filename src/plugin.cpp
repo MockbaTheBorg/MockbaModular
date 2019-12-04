@@ -18,6 +18,7 @@ void init(Plugin* p) {
 	p->addModel(modelDividah);
 	p->addModel(modelCountah);
 	p->addModel(modelSelectah);
+	p->addModel(modelShapah);
 	p->addModel(modelCZSaw);
 	p->addModel(modelCZSquare);
 	p->addModel(modelCZPulse);
@@ -26,6 +27,15 @@ void init(Plugin* p) {
 	p->addModel(modelCZReso1);
 	p->addModel(modelCZReso2);
 	p->addModel(modelCZReso3);
+	p->addModel(modelComparator);
+	p->addModel(modelDualBUFFER);
+	p->addModel(modelDualNOT);
+	p->addModel(modelDualOR);
+	p->addModel(modelDualNOR);
+	p->addModel(modelDualAND);
+	p->addModel(modelDualNAND);
+	p->addModel(modelDualXOR);
+	p->addModel(modelDualXNOR);
 	p->addModel(modelUDPClockSlave);
 	p->addModel(modelUDPClockMaster);
 

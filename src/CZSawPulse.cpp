@@ -1,3 +1,5 @@
+// Casio CZ style SawPulse oscillator by Mockba the Borg
+
 #include "plugin.hpp"
 
 template <int OVERSAMPLE, int QUALITY, typename T>

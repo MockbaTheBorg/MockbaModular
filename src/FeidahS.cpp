@@ -1,4 +1,4 @@
-// Simple voltage fader by Mockba the Borg
+// Simple stereo voltage fader by Mockba the Borg
 
 #include "plugin.hpp"
 

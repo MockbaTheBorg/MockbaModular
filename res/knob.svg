@@ -27,7 +27,22 @@
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs14" />
+     id="defs14">
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lstart"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path2287"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1;fill:#000000;fill-opacity:1"
+         transform="scale(0.8) translate(12.5,0)" />
+    </marker>
+  </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -35,15 +50,15 @@
      objecttolerance="10"
      gridtolerance="10"
      guidetolerance="10"
-     inkscape:pageopacity="0"
+     inkscape:pageopacity="0.50196078"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
      inkscape:window-height="1027"
      id="namedview12"
-     showgrid="true"
-     inkscape:zoom="20.85965"
-     inkscape:cx="14.75587"
-     inkscape:cy="17.755126"
+     showgrid="false"
+     inkscape:zoom="26.812501"
+     inkscape:cx="3.8787874"
+     inkscape:cy="15.761511"
      inkscape:window-x="-8"
      inkscape:window-y="22"
      inkscape:window-maximized="1"
@@ -57,52 +72,85 @@
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0">
+     fit-margin-bottom="0"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:pagecheckerboard="true"
+     inkscape:bbox-paths="false">
     <inkscape:grid
        type="xygrid"
        id="grid829"
        originx="-2.0000001e-007"
        originy="1.7410357e-006" />
+    <sodipodi:guide
+       position="16.000001,16.000002"
+       orientation="0,1"
+       id="guide839"
+       inkscape:locked="false" />
+    <sodipodi:guide
+       position="16.000001,16.000002"
+       orientation="1,0"
+       id="guide841"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <g
      id="g9727"
      transform="matrix(2.6666666,0,0,2.6666666,-5.3333332,-5.3333332)">
     <path
-       id="circle4"
-       d="M 14,8 A 6,6 0 0 1 8,14 6,6 0 0 1 2,8 6,6 0 0 1 8,2 6,6 0 0 1 14,8 Z"
-       style="fill:#4d4d4d"
-       inkscape:connector-curvature="0" />
-    <path
-       inkscape:connector-curvature="0"
-       id="circle2-8"
-       d="M 12.2,8 A 4.2000002,4.2000002 0 0 1 8,12.2 4.2000002,4.2000002 0 0 1 3.8,8 4.2000002,4.2000002 0 0 1 8,3.8 4.2000002,4.2000002 0 0 1 12.2,8 Z"
-       style="fill:#1a1a1a;stroke-width:0.53846157" />
-    <ellipse
-       ry="3.3411007"
-       rx="1.3672724"
-       cy="5.374999"
-       cx="8"
-       id="path9718"
-       style="opacity:1;fill:#1a1a1a;fill-opacity:1;stroke-width:2.00796318" />
-    <path
-       inkscape:connector-curvature="0"
-       id="circle2"
-       d="M 10.6,8 A 2.6000001,2.6000001 0 0 1 8,10.6 2.6000001,2.6000001 0 0 1 5.4,8 2.6000001,2.6000001 0 0 1 8,5.4 2.6000001,2.6000001 0 0 1 10.6,8 Z"
-       style="fill:#999999;stroke-width:0.33333334" />
+       style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:1.51181102;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       d="M 15.962891 0.52148438 A 15.477855 15.477855 0 0 0 12.677734 0.89453125 L 10.423828 0.89453125 L 10.423828 1.5507812 A 15.477855 15.477855 0 0 0 9.734375 1.8496094 L 9.2617188 1.3769531 L 7.7460938 2.8925781 A 15.477855 15.477855 0 0 0 2.8847656 7.7539062 L 1.3769531 9.2617188 L 1.8300781 9.7148438 A 15.477855 15.477855 0 0 0 1.5429688 10.423828 L 0.89453125 10.423828 L 0.89453125 12.527344 A 15.477855 15.477855 0 0 0 0.484375 16 A 15.477855 15.477855 0 0 0 0.89453125 19.451172 L 0.89453125 21.576172 L 1.5253906 21.576172 A 15.477855 15.477855 0 0 0 1.8359375 22.279297 L 1.3769531 22.738281 L 2.8554688 24.216797 A 15.477855 15.477855 0 0 0 7.7167969 29.078125 L 9.2617188 30.623047 L 9.7285156 30.15625 A 15.477855 15.477855 0 0 0 10.423828 30.433594 L 10.423828 31.105469 L 12.636719 31.105469 A 15.477855 15.477855 0 0 0 15.962891 31.478516 A 15.477855 15.477855 0 0 0 19.248047 31.105469 L 21.576172 31.105469 L 21.576172 30.423828 A 15.477855 15.477855 0 0 0 22.242188 30.126953 L 22.738281 30.623047 L 24.367188 28.994141 A 15.477855 15.477855 0 0 0 28.917969 24.443359 L 30.623047 22.738281 L 30.119141 22.234375 A 15.477855 15.477855 0 0 0 30.382812 21.576172 L 31.105469 21.576172 L 31.105469 19.181641 A 15.477855 15.477855 0 0 0 31.441406 16 A 15.477855 15.477855 0 0 0 31.105469 12.880859 L 31.105469 10.423828 L 30.400391 10.423828 A 15.477855 15.477855 0 0 0 30.111328 9.7734375 L 30.623047 9.2617188 L 28.957031 7.5957031 A 15.477855 15.477855 0 0 0 24.400391 3.0390625 L 22.738281 1.3769531 L 22.248047 1.8671875 A 15.477855 15.477855 0 0 0 21.576172 1.5917969 L 21.576172 0.89453125 L 19.289062 0.89453125 A 15.477855 15.477855 0 0 0 15.962891 0.52148438 z "
+       transform="matrix(0.37500003,0,0,0.37500003,2,2)"
+       id="rect1458" />
     <rect
-       y="-3.3605711"
-       x="7.8813558"
-       height="1.2409899"
-       width="0.23728813"
-       id="rect9720"
-       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke-width:0.79447669"
-       transform="scale(1,-1)" />
-    <ellipse
-       ry="2.7161016"
-       rx="0.6172719"
-       cy="6.124999"
+       style="opacity:1;fill:#4d4d4d;fill-opacity:1;stroke:none;stroke-width:0.50147712;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="rect1393"
+       width="0.27972028"
+       height="11.608394"
+       x="4.1893411"
+       y="4.648459"
+       transform="rotate(-22.50202)" />
+    <rect
+       style="opacity:1;fill:#4d4d4d;fill-opacity:1;stroke:none;stroke-width:0.50147712;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="rect1393-7"
+       width="0.27972028"
+       height="11.608394"
+       x="10.298917"
+       y="-1.4672058"
+       transform="rotate(22.488492)" />
+    <rect
+       style="opacity:1;fill:#4d4d4d;fill-opacity:1;stroke:none;stroke-width:0.50147712;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="rect1393-8"
+       width="0.27972028"
+       height="11.608394"
+       x="-4.4707122"
+       y="4.6477752"
+       transform="rotate(-67.507038)" />
+    <rect
+       style="opacity:1;fill:#4d4d4d;fill-opacity:1;stroke:none;stroke-width:0.50147712;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="rect1393-6"
+       width="0.27972028"
+       height="11.608394"
+       x="10.314642"
+       y="-10.128937"
+       transform="rotate(67.473531)" />
+    <rect
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.4959096;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="rect1439"
+       width="1.048951"
+       height="1.4125874"
+       x="7.4755249"
+       y="2.265734" />
+    <circle
+       style="opacity:1;fill:#333333;fill-opacity:1;stroke:none;stroke-width:0.50572658;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="path1490"
        cx="8"
-       id="path9718-2"
-       style="opacity:1;fill:#999999;fill-opacity:1;stroke-width:1.21645129" />
+       cy="7.9860139"
+       r="4.3916082" />
+    <circle
+       style="opacity:1;fill:#cccccc;fill-opacity:1;stroke:none;stroke-width:0.54535055;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0.3023622;stroke-opacity:1;paint-order:markers fill stroke"
+       id="path1437"
+       cx="8"
+       cy="8"
+       r="3.8881116" />
   </g>
 </svg>

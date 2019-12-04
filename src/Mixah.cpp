@@ -5,6 +5,7 @@
 struct Mixah : Module {
 	enum ParamIds {
 		_KNOB_PARAM,
+		_PHASE_PARAM,
 		NUM_PARAMS
 	};
 	enum InputIds {
@@ -30,19 +31,19 @@ struct Mixah : Module {
 };
 
 void Mixah::process(const ProcessArgs& args) {
-	float mix = params[_KNOB_PARAM].getValue();
+	float mix = 1.0f - params[_KNOB_PARAM].getValue();
 	float out;
+	float inA, inB;
 	// Iterate over each channel
 	int channels = max(max(inputs[_A_INPUT].getChannels(), inputs[_B_INPUT].getChannels()), 1);
 	for (int c = 0; c < channels; c++) {
-		float outa = inputs[_A_INPUT].getVoltage(c) * (1 - mix);
-		float outb = inputs[_B_INPUT].getVoltage(c) * mix;
-		if (inputs[_VCA_INPUT].isConnected()) {
-			out = (outa + outb) * (inputs[_VCA_INPUT].getVoltage(c) / 10);
-		} else {
-			out = outa + outb;
-		}
-		out = clamp(out, -10.0f, 10.0f);
+		inA = inputs[_A_INPUT].getVoltage(c);
+		inB = inputs[_B_INPUT].getVoltage(c);
+		if (params[_PHASE_PARAM].getValue() == 1.0)
+			inB = -inB;
+		out = crossfade(inB, inA, mix);
+		if (inputs[_VCA_INPUT].isConnected())
+			out = out * (inputs[_VCA_INPUT].getVoltage(c) / 10);
 		outputs[_MIX_OUTPUT].setVoltage(out, c);
 	}
 	outputs[_MIX_OUTPUT].setChannels(channels);
@@ -59,6 +60,7 @@ struct MixahWidget : ModuleWidget {
 
 		// Knobs
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, Mixah::_KNOB_PARAM));
+		addParam(createParamCentered<_Hsw>(mm2px(Vec(5.1, 79.0)), module, Mixah::_PHASE_PARAM));
 
 		// Inputs
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Mixah::_VCA_INPUT));
