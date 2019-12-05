@@ -36,7 +36,7 @@ void FeidahS::process(const ProcessArgs& args) {
 	float outR;
 	// Iterate over each channel
 	int channels = max(inputs[_LEFT_INPUT].getChannels() , max(inputs[_LEFT_INPUT].getChannels(), 1));
-	for (int c = 0; c < channels; c++) {
+	for (int c = 0; c < channels; ++c) {
 		if (inputs[_VCA_INPUT].isConnected()) {
 			outL = inputs[_LEFT_INPUT].getVoltage(c) * atten * (inputs[_VCA_INPUT].getVoltage(c) / 10);
 			if (inputs[_RIGHT_INPUT].isConnected()) {
@@ -52,8 +52,6 @@ void FeidahS::process(const ProcessArgs& args) {
 				outR = outL;
 			}
 		}
-		outL = clamp(outL, -10.0f, 10.0f);
-		outR = clamp(outR, -10.0f, 10.0f);
 		outputs[_LEFT_OUTPUT].setVoltage(outL, c);
 		outputs[_RIGHT_OUTPUT].setVoltage(outR, c);
 	}
@@ -67,8 +65,8 @@ struct FeidahSWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/FeidahS.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, FeidahS::_KNOB_PARAM));

@@ -30,12 +30,15 @@ struct DualNAND : Module {
 };
 
 void DualNAND::process(const ProcessArgs& args) {
+	// Get inputs
 	int a1 = inputs[_A1_INPUT].getVoltage() > 0;
 	int b1 = inputs[_B1_INPUT].getVoltage() > 0;
 	int a2 = inputs[_A2_INPUT].getVoltage() > 0;
 	int b2 = inputs[_B2_INPUT].getVoltage() > 0;
+	// Calculate results
 	int q1 = !(a1 && b1);
 	int q2 = !(a2 && b2);
+	// Set outputs
 	outputs[_Q1_OUTPUT].setVoltage(q1 * 10);
 	outputs[_Q2_OUTPUT].setVoltage(q2 * 10);
 }
@@ -46,8 +49,8 @@ struct DualNANDWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualNAND.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Inputs
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, DualNAND::_A1_INPUT));

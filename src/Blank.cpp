@@ -21,6 +21,7 @@ struct Blank : Module {
 	}
 
 	void process(const ProcessArgs& args) override {
+
 	}
 };
 
@@ -30,8 +31,8 @@ struct BlankWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Blank.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 	}
 };
 

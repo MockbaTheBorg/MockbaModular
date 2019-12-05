@@ -1,7 +1,7 @@
 {
   "slug": "MockbaModular",
   "name": "Mockba Modular",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "license": "MIT",
   "brand": "Mockba Modular",
   "author": "Mockba the Borg",
@@ -36,6 +36,15 @@
       "description": "Simple stereo signal fader",
       "tags": [
         "Attenuator",
+        "Polyphonic"
+      ]
+    },
+    {
+      "slug": "Filtah",
+      "name": "Filtah",
+      "description": "Simple Moog style filter",
+      "tags": [
+        "Filter",
         "Polyphonic"
       ]
     },

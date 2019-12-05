@@ -46,6 +46,7 @@ struct _Saw {
 
 struct CZSaw : Module {
 	enum ParamIds {
+		_LFO_PARAM,
 		_FREQ_PARAM,
 		_FINE_PARAM,
 		_SHAPE_PARAM,
@@ -68,8 +69,9 @@ struct CZSaw : Module {
 
 	CZSaw() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configParam(_LFO_PARAM, 0, 1, 0, "OFF ON");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
-		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
+		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
 		configParam(_SHAPE_PARAM, 0.0f, 10.0f, 0.0f, "Shape");
 	}
 
@@ -90,6 +92,9 @@ void CZSaw::onReset() {
 void CZSaw::process(const ProcessArgs& args) {
 	// Get the frequency parameters
 	float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
+	// LFO mode
+	if (params[_LFO_PARAM].getValue())
+		freqParam = (freqParam * 2) - 5;
 	freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
 	// Get the shape parameter
 	float shapeParam = params[_SHAPE_PARAM].getValue();
@@ -108,7 +113,8 @@ void CZSaw::process(const ProcessArgs& args) {
 		oscillator->setShape(shape);
 		// Process and output
 		oscillator->process(args.sampleTime);
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out(), c);
+		float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out() + off, c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }
@@ -119,10 +125,11 @@ struct CZSawWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZSaw.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
+		addParam(createParamCentered<_Hsw>(mm2px(Vec(5.1, 46.0)), module, CZSaw::_LFO_PARAM));
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, CZSaw::_FREQ_PARAM));
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, CZSaw::_FINE_PARAM));
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, CZSaw::_SHAPE_PARAM));

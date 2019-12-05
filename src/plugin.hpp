@@ -78,7 +78,15 @@ struct _Selector : RoundKnob {
 struct _Hsw : SvgSwitch {
 	_Hsw() {
 		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_0.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_2.svg")));
+	}
+};
+
+struct _Hsw3 : SvgSwitch {
+	_Hsw3() {
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_0.svg")));
 		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_1.svg")));
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/HSW_2.svg")));
 	}
 };
 
@@ -93,6 +101,7 @@ struct _Port : SVGPort {
 extern Model* modelBlank;
 extern Model* modelFeidah;
 extern Model* modelFeidahS;
+extern Model* modelFiltah;
 extern Model* modelMixah;
 extern Model* modelDividah;
 extern Model* modelCountah;

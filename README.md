@@ -11,13 +11,19 @@ A simple logo blank just because everyone else seems to have one.
 
 ## Feidah
 Small fader (attenuator) module I use to control volume levels, etc.<br>
+If the input is disconnedted, Feidah becomes a 0V -> 10V source.<br>
 This is actually the first module I made, evah!
 
 ## FeidahS
-Small stereo fader module. Feidah's big brother.
+Small stereo fader module. Feidah's big brother.<br>
+Doesn't have voltage source functionality.
+
+## Filtah
+Simple Moog based multimode filter.
 
 ## Mixah
-Small two signal mixer (crossfader) for voltages.
+Small two signal mixer (crossfader) for voltages.<br>
+If the inputs are disconnected, Mixah becomes a -5V -> 5V source.
 
 ## Dividah
 Simple clock divider based on inverse counting, so all the clock outputs will start in sync.
@@ -26,7 +32,7 @@ Simple clock divider based on inverse counting, so all the clock outputs will st
 Simple binary counter/divider, can be used as divider but the clock outputs won't start in sync.
 
 ## Selectah
-Simple 4 to 1 selector, used to select waves from a 4 output oscillator.
+Simple 4 to 1 selector, normally used to manually select waves from a 4 output oscillator.
 
 ## Shapah
 Simple envelope shaper with classic ADSR controls.
@@ -48,7 +54,9 @@ The little status light illuminates red if there's any issue establishing the UD
 # CZ Series
 ![Alt text](./screenshot2.png)
 
-These modules precisely recreate the classic Casio CZ series Phase Distortion waveforms.
+These modules precisely recreate the classic Casio CZ series Phase Distortion waveforms.<br>
+The Saw, Square and Pulse oscillators can also work as LFO.<br>
+If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
 
 # Logic Series
 ![Alt text](./screenshot3.png)

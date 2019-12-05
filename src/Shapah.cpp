@@ -103,8 +103,8 @@ struct ShapahWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Shapah.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 46.0)), module, Shapah::_ATTACK_PARAM));

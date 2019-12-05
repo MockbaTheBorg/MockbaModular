@@ -35,26 +35,13 @@ void Selectah::process(const ProcessArgs& args) {
 	int selection;
 	if (inputs[_SEL_INPUT].isConnected()) {
 		selection = clamp(floor(inputs[_SEL_INPUT].getVoltage() / 2.5f), 0.0f, 3.0f);
-		params[_SELECT_PARAM].setValue(selection);
 	} else {
 		selection = int(params[_SELECT_PARAM].getValue());
 	}
 	// Iterate over each channel
 	int channels = max(max(max(max(inputs[_A_INPUT].getChannels(), inputs[_B_INPUT].getChannels()), inputs[_C_INPUT].getChannels()), inputs[_D_INPUT].getChannels()), 1);
-	for (int c = 0; c < channels; c++) {
-		switch (selection) {
-		case 0:
-			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_A_INPUT].getVoltage(c), c);
-			break;
-		case 1:
-			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_B_INPUT].getVoltage(c), c);
-			break;
-		case 2:
-			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_C_INPUT].getVoltage(c), c);
-			break;
-		default:
-			outputs[_SELECTED_OUTPUT].setVoltage(inputs[_D_INPUT].getVoltage(c), c);
-		}
+	for (int c = 0; c < channels; ++c) {
+		outputs[_SELECTED_OUTPUT].setVoltage(inputs[selection + 1].getVoltage(c), c);
 	}
 	outputs[_SELECTED_OUTPUT].setChannels(channels);
 }
@@ -65,8 +52,8 @@ struct SelectahWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Selectah.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Knobs
 		addParam(createParamCentered<_Selector>(mm2px(Vec(5.1, 46.0)), module, Selectah::_SELECT_PARAM));

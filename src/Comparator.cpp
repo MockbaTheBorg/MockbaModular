@@ -30,12 +30,15 @@ struct Comparator : Module {
 };
 
 void Comparator::process(const ProcessArgs& args) {
+	// Get inputs
 	float a = inputs[_A_INPUT].getVoltage();
 	float b = inputs[_B_INPUT].getVoltage();
+	// Calculate results
 	int lt = a < b;
 	int eq = a == b;
 	int ne = a != b;
 	int gt = a > b;
+	// Set outputs
 	outputs[_LT_OUTPUT].setVoltage(lt * 10);
 	outputs[_EQ_OUTPUT].setVoltage(eq * 10);
 	outputs[_NE_OUTPUT].setVoltage(ne * 10);
@@ -48,8 +51,8 @@ struct ComparatorWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Comparator.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Inputs
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, Comparator::_A_INPUT));

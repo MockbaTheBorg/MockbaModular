@@ -14,6 +14,7 @@ void init(Plugin* p) {
 	p->addModel(modelBlank);
 	p->addModel(modelFeidah);
 	p->addModel(modelFeidahS);
+	p->addModel(modelFiltah);
 	p->addModel(modelMixah);
 	p->addModel(modelDividah);
 	p->addModel(modelCountah);

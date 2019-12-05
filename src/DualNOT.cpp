@@ -30,9 +30,11 @@ struct DualNOT : Module {
 };
 
 void DualNOT::process(const ProcessArgs& args) {
+	// Get inputs
 	int a1 = inputs[_A1_INPUT].getVoltage() <= 0;
 	int a2 = inputs[_A2_INPUT].getVoltage() <= 0;
 	int a3 = inputs[_A3_INPUT].getVoltage() <= 0;
+	// Set outputs
 	outputs[_Q1_OUTPUT].setVoltage(a1 * 10);
 	outputs[_Q2_OUTPUT].setVoltage(a2 * 10);
 	outputs[_Q3_OUTPUT].setVoltage(a3 * 10);
@@ -44,8 +46,8 @@ struct DualNOTWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualNOT.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Inputs
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, DualNOT::_A1_INPUT));

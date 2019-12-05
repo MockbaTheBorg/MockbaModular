@@ -64,7 +64,7 @@ void Countah::process(const ProcessArgs& args) {
 	if (inputs[_CLOCK_INPUT].getVoltage() > 0.0) {
 		if (clock_was0) {
 			clock_was0 = false;
-			value--;
+			--value;
 
 			outputs[_BY2_OUTPUT].setVoltage(value & 1 ? 10.0 : 0.0);
 			outputs[_BY4_OUTPUT].setVoltage(value & 2 ? 10.0 : 0.0);
@@ -84,8 +84,8 @@ struct CountahWidget : ModuleWidget {
 		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Countah.svg")));
 
 		// Screws
-		addChild(createWidget<_Screw>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<_Screw>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 		// Inputs
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 46.0)), module, Countah::_CLOCK_INPUT));
