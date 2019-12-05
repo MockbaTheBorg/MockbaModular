@@ -55,7 +55,7 @@ The little status light illuminates red if there's any issue establishing the UD
 ![Alt text](./screenshot2.png)
 
 These modules precisely recreate the classic Casio CZ series Phase Distortion waveforms.<br>
-The Saw, Square and Pulse oscillators can also work as LFO.<br>
+The Saw, Square and Pulse oscillators can also work as LFOs.<br>
 If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
 
 # Logic Series
