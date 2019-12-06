@@ -25,18 +25,18 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="154.99144"
-     inkscape:cy="258.32061"
+     inkscape:zoom="11.2"
+     inkscape:cx="31.629052"
+     inkscape:cy="70.375174"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g1150"
      showgrid="true"
      inkscape:window-width="1920"
      inkscape:window-height="1027"
      inkscape:window-x="-8"
      inkscape:window-y="22"
      inkscape:window-maximized="1"
-     inkscape:pagecheckerboard="false"
+     inkscape:pagecheckerboard="true"
      inkscape:snap-to-guides="true"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -50,7 +50,8 @@
      inkscape:snap-nodes="true"
      inkscape:measure-start="-12.2321,122.857"
      inkscape:measure-end="-11.6964,83.125"
-     inkscape:bbox-paths="false">
+     inkscape:bbox-paths="false"
+     inkscape:showpageshadow="false">
     <inkscape:grid
        type="xygrid"
        id="grid5221"
@@ -140,13 +141,6 @@
      id="layer1"
      transform="translate(0,-168.5)"
      style="display:inline">
-    <rect
-       style="opacity:1;fill:#f4e3d7;fill-opacity:1;stroke-width:0.73480189"
-       id="rect5223"
-       width="10.16"
-       height="128.5"
-       x="-0.0036234413"
-       y="168.51376" />
     <g
        style="display:inline;fill:#ff0000"
        id="g1162">
@@ -197,8 +191,8 @@
        transform="translate(0,212.5)">
       <path
          id="rect180-5"
-         d="m 0.5,52.5 h 9.2 v 2 H 0.5 Z"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.23263213"
+         d="m 0.5,51.5 h 9.2 v 3 H 0.5 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.284915"
          inkscape:connector-curvature="0" />
       <path
          id="rect182-7"
@@ -369,8 +363,8 @@
        transform="translate(0,179.5)">
       <path
          id="rect180-5-6"
-         d="m 0.5,52.5 h 9.2 v 2 H 0.5 Z"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.23263213"
+         d="m 0.5,51.5 h 9.2 v 3 H 0.5 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.284915"
          inkscape:connector-curvature="0" />
       <path
          id="rect182-7-3"

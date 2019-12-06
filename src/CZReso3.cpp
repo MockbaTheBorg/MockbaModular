@@ -1,6 +1,7 @@
 // Casio CZ style Reso3 oscillator by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 template <int OVERSAMPLE, int QUALITY, typename T>
 struct _Reso3 {
@@ -114,7 +115,10 @@ void CZReso3::process(const ProcessArgs& args) {
 struct CZReso3Widget : ModuleWidget {
 	CZReso3Widget(CZReso3* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZReso3.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZReso3.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

@@ -1,6 +1,7 @@
 // A blank, why not? by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Blank : Module {
 	enum ParamIds {
@@ -28,7 +29,10 @@ struct Blank : Module {
 struct BlankWidget : ModuleWidget {
 	BlankWidget(Blank* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Blank.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Blank.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

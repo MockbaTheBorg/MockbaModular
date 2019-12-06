@@ -174,7 +174,7 @@
     {
       "slug": "DualBUFFER",
       "name": "DualBUFFER",
-      "description": "Simple BUFFER gates",
+      "description": "Simple BUFFER gates (3 actually)",
       "tags": [
         "Utility"
       ]
@@ -182,7 +182,7 @@
     {
       "slug": "DualNOT",
       "name": "DualNOT",
-      "description": "Simple NOT gates",
+      "description": "Simple NOT gates (3 actually)",
       "tags": [
         "Utility"
       ]

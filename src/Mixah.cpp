@@ -1,6 +1,7 @@
 // Simple voltage mixer by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Mixah : Module {
 	enum ParamIds {
@@ -26,6 +27,7 @@ struct Mixah : Module {
 	Mixah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.5f, "");
+		configParam(_PHASE_PARAM, 0.f, 1.f, 0.f, "B Phase reverse");
 	}
 
 	void process(const ProcessArgs& args) override;
@@ -63,7 +65,10 @@ void Mixah::process(const ProcessArgs& args) {
 struct MixahWidget : ModuleWidget {
 	MixahWidget(Mixah* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Mixah.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Mixah.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));
@@ -71,13 +76,13 @@ struct MixahWidget : ModuleWidget {
 
 		// Knobs
 		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 46.0)), module, Mixah::_KNOB_PARAM));
-		addParam(createParamCentered<_Hsw>(mm2px(Vec(5.1, 79.0)), module, Mixah::_PHASE_PARAM));
+		addParam(createParamCentered<_Hsw>(mm2px(Vec(5.1, 101.0)), module, Mixah::_PHASE_PARAM));
 
 		// Inputs
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, Mixah::_MOD_INPUT));
 		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, Mixah::_VCA_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Mixah::_A_INPUT));
-		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Mixah::_B_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, Mixah::_A_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Mixah::_B_INPUT));
 
 		// Outputs
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, Mixah::_MIX_OUTPUT));

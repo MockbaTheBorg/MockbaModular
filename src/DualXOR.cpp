@@ -1,6 +1,7 @@
 // Simple XOR gates by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct DualXOR : Module {
 	enum ParamIds {
@@ -46,7 +47,10 @@ void DualXOR::process(const ProcessArgs& args) {
 struct DualXORWidget : ModuleWidget {
 	DualXORWidget(DualXOR* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualXOR.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualXOR.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

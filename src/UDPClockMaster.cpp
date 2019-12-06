@@ -1,6 +1,7 @@
 // Simple UDP clock sync master by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 #define PORT_NUM     7000             // Listening Port = PORT_NUM + _CHANNEL_PARAM
 #define IP_ADDR      "192.168.1.255"  // IP address to broadcast to (must be added to setup later)
@@ -34,8 +35,12 @@ const char* loadIPAddress() {
 		return IP_ADDR;
 	}
 	json_t* IPAddressJ = json_object_get(settingsJ, "IPAddress");
-	if (IPAddressJ)
+	if (IPAddressJ) {
 		ret = json_string_value(IPAddressJ);
+	} else {
+		ret = IP_ADDR;
+		saveIPAddress(IP_ADDR);
+	}
 
 	fclose(file);
 	json_decref(settingsJ);
@@ -159,7 +164,10 @@ void UDPClockMaster::process(const ProcessArgs& args) {
 struct UDPClockMasterWidget : ModuleWidget {
 	UDPClockMasterWidget(UDPClockMaster* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/UDPClockMaster.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/UDPClockMaster.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

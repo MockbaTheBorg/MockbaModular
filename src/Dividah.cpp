@@ -1,6 +1,7 @@
 // Simple binary clock divider by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Dividah : Module {
 	enum ParamIds {
@@ -82,7 +83,10 @@ void Dividah::process(const ProcessArgs& args) {
 struct DividahWidget : ModuleWidget {
 	DividahWidget(Dividah* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Dividah.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Dividah.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

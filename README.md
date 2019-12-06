@@ -61,7 +61,18 @@ If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
 # Logic Series
 ![Alt text](./screenshot3.png)
 
-These modules implement multiple logic gates and functions.
+These modules implement multiple logic gates and functions.<br>
+The NOT module can work as a voltage inverter (phase inverter) when in analog mode.
+
+## Background Color
+The default background color can be replaced by changing the svg file on the json configuration.<br>
+Just add an item called "Background" with the path to the background image filename. Like so:<br>
+```
+{
+  "Background": "res/Empty_gray.svg",
+  "IPAddress": "192.168.1.255"
+}
+```
 
 ## Building
 Just follow the VCV recommendations to build plugins.<br>

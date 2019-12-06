@@ -1,6 +1,7 @@
 // Simple NOR gates by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct DualNOR : Module {
 	enum ParamIds {
@@ -46,7 +47,10 @@ void DualNOR::process(const ProcessArgs& args) {
 struct DualNORWidget : ModuleWidget {
 	DualNORWidget(DualNOR* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualNOR.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualNOR.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

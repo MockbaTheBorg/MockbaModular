@@ -1,6 +1,7 @@
 // Simple voltage fader by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Feidah : Module {
 	enum ParamIds {
@@ -51,7 +52,10 @@ void Feidah::process(const ProcessArgs& args) {
 struct FeidahWidget : ModuleWidget {
 	FeidahWidget(Feidah* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Feidah.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Feidah.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

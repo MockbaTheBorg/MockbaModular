@@ -1,6 +1,7 @@
 // Simple XNOR gates by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct DualXNOR : Module {
 	enum ParamIds {
@@ -46,7 +47,10 @@ void DualXNOR::process(const ProcessArgs& args) {
 struct DualXNORWidget : ModuleWidget {
 	DualXNORWidget(DualXNOR* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualXNOR.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualXNOR.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

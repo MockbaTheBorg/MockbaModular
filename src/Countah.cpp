@@ -1,6 +1,7 @@
 // Simple binary clock counter by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Countah : Module {
 	enum ParamIds {
@@ -81,7 +82,10 @@ void Countah::process(const ProcessArgs& args) {
 struct CountahWidget : ModuleWidget {
 	CountahWidget(Countah* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Countah.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Countah.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

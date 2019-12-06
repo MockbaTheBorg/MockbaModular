@@ -1,6 +1,7 @@
 // Casio CZ style SawPulse oscillator by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 template <int OVERSAMPLE, int QUALITY, typename T>
 struct _SawPulse {
@@ -116,7 +117,10 @@ void CZSawPulse::process(const ProcessArgs& args) {
 struct CZSawPulseWidget : ModuleWidget {
 	CZSawPulseWidget(CZSawPulse* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZSawPulse.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/CZSawPulse.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

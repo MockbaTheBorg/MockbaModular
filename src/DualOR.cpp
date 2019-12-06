@@ -1,6 +1,7 @@
 // Simple OR gates by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct DualOR : Module {
 	enum ParamIds {
@@ -46,7 +47,10 @@ void DualOR::process(const ProcessArgs& args) {
 struct DualORWidget : ModuleWidget {
 	DualORWidget(DualOR* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualOR.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualOR.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

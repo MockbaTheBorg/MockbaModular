@@ -1,6 +1,7 @@
 // Simple UDP clock sync slave by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 #define PORT_NUM     7000             // Listening Port = PORT_NUM + _CHANNEL_PARAM
 
@@ -145,7 +146,10 @@ void UDPClockSlave::process(const ProcessArgs& args) {
 struct UDPClockSlaveWidget : ModuleWidget {
 	UDPClockSlaveWidget(UDPClockSlave* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/UDPClockSlave.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/UDPClockSlave.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

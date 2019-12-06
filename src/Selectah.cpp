@@ -1,6 +1,7 @@
 // Simple 4 to 1 selector by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Selectah : Module {
 	enum ParamIds {
@@ -25,7 +26,7 @@ struct Selectah : Module {
 
 	Selectah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_SELECT_PARAM, 0.f, 3.f, 0.f, "");
+		configParam(_SELECT_PARAM, 0.f, 3.f, 0.f, "A B C D");
 	}
 
 	void process(const ProcessArgs& args) override;
@@ -49,7 +50,10 @@ void Selectah::process(const ProcessArgs& args) {
 struct SelectahWidget : ModuleWidget {
 	SelectahWidget(Selectah* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Selectah.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Selectah.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

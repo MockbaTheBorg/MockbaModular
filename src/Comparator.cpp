@@ -1,6 +1,7 @@
 // Simple voltage comparator by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct Comparator : Module {
 	enum ParamIds {
@@ -48,7 +49,10 @@ void Comparator::process(const ProcessArgs& args) {
 struct ComparatorWidget : ModuleWidget {
 	ComparatorWidget(Comparator* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Comparator.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/Comparator.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));

@@ -26,10 +26,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="7.919596"
-     inkscape:cx="-17.924068"
-     inkscape:cy="17.97208"
+     inkscape:cx="1.6476379"
+     inkscape:cy="275.56098"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g1964"
      showgrid="true"
      inkscape:window-width="1920"
      inkscape:window-height="1027"
@@ -140,13 +140,6 @@
      id="layer1"
      transform="translate(0,-168.5)"
      style="display:inline">
-    <rect
-       style="opacity:1;fill:#f4e3d7;fill-opacity:1;stroke-width:0.73480189"
-       id="rect5223"
-       width="10.16"
-       height="128.5"
-       x="0"
-       y="168.49998" />
     <g
        transform="translate(2.3756324e-8,-22)"
        style="display:inline;fill:#666666"
@@ -228,8 +221,8 @@
          inkscape:connector-curvature="0" />
       <path
          id="rect180-5-8"
-         d="M 0.49999999,219 H 9.7 v 2 H 0.49999999 Z"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.23263213"
+         d="M 0.49999999,219 H 9.7 v 3 H 0.49999999 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.284915"
          inkscape:connector-curvature="0" />
       <g
          aria-label="clock"

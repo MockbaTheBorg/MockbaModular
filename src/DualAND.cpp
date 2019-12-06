@@ -1,6 +1,7 @@
 // Simple AND gates by Mockba the Borg
 
 #include "plugin.hpp"
+#include "MockbaModular.hpp"
 
 struct DualAND : Module {
 	enum ParamIds {
@@ -46,7 +47,10 @@ void DualAND::process(const ProcessArgs& args) {
 struct DualANDWidget : ModuleWidget {
 	DualANDWidget(DualAND* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualAND.svg")));
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/DualAND.svg")));
+		addChild(panel);
 
 		// Screws
 		addChild(createWidget<_Screw>(Vec(0, 0)));
