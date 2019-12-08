@@ -1,11 +1,11 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-#define BACK "res/Empty_light.svg"
+const std::string BACK("res/Empty_light.svg");
 
-void saveBack(const char* Back) {
+void saveBack(const std::string& Back) {
 	json_t* settingsJ = json_object();
-	json_object_set_new(settingsJ, "Background", json_string(Back));
+	json_object_set_new(settingsJ, "Background", json_string(Back.c_str()));
 	std::string settingsFilename = asset::user("MockbaModular.json");
 	FILE* file = fopen(settingsFilename.c_str(), "w");
 	if (file) {
@@ -15,8 +15,8 @@ void saveBack(const char* Back) {
 	json_decref(settingsJ);
 }
 
-const char* loadBack() {
-	const char* ret = BACK;
+std::string loadBack() {
+	std::string ret;
 	std::string settingsFilename = asset::user("MockbaModular.json");
 	FILE* file = fopen(settingsFilename.c_str(), "r");
 	if (!file) {

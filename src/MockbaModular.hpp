@@ -1,13 +1,9 @@
 #ifndef MOCKBAMODULAR_HPP
 #define MOCKBAMODULAR_HPP
 
-#ifdef bazinga
-	#define BGCOLOR loadBack()
-#else
-	#define BGCOLOR "res/Empty_light.svg"
-#endif
+#define BGCOLOR loadBack()
 
-void saveBack(const char* Back);
-const char* loadBack();
+void saveBack(const std::string& Back);
+std::string loadBack();
 
 #endif
