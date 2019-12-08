@@ -37,6 +37,12 @@ Simple 4 to 1 selector, normally used to manually select waves from a 4 output o
 ## Shapah
 Simple envelope shaper with classic ADSR controls.
 
+## Holdah
+Simple sample and hold with trigger input.
+
+## Pannah
+Simple panning module. 
+
 ## UDPClockMaster (Mastah)
 Clock/Reset UDP broadcaster.<br>
 This module receives a clock and a reset signals as inputs and then broadcasts them via UDP port 7000, to allow for synchronization of other VCV Rack instances running on different computers at the same network.<br>

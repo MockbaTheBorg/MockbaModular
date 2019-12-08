@@ -18,6 +18,8 @@ void init(Plugin* p) {
 	p->addModel(modelCountah);
 	p->addModel(modelSelectah);
 	p->addModel(modelShapah);
+	p->addModel(modelHoldah);
+	p->addModel(modelPannah);
 	p->addModel(modelCZSaw);
 	p->addModel(modelCZSquare);
 	p->addModel(modelCZPulse);

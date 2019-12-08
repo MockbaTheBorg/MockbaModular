@@ -107,6 +107,8 @@ extern Model* modelDividah;
 extern Model* modelCountah;
 extern Model* modelSelectah;
 extern Model* modelShapah;
+extern Model* modelHoldah;
+extern Model* modelPannah;
 extern Model* modelCZSaw;
 extern Model* modelCZSquare;
 extern Model* modelCZPulse;
