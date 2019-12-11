@@ -3,6 +3,149 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
+template <int OVERSAMPLE, int QUALITY, typename T>
+struct _Filter {
+	T cDenorm = 10 ^ -30;
+	T mv = powf(2, -0.2 / 6);
+
+	//fir restoration
+	T c1 = 1;
+	T c2 = -0.75;
+	T c3 = 0.17;
+	T fgain = 5;
+
+	//fir bandlimit
+	T bl_c1 = 0.52;
+	T bl_c2 = 0.54;
+	T bl_c3 = -0.02;
+
+	T tk = 0;
+	T tp = 0;
+	T tr = 0;
+
+	T ps_out1l = 0;
+	T ps_out2l = 0;
+
+	T o_in1l = 0;
+	T o_in2l = 0;
+
+	T bl1_1 = 0;
+	T bl2_1 = 0;
+	T bl3_1 = 0;
+	T bl1_2 = 0;
+	T bl2_2 = 0;
+	T bl3_2 = 0;
+
+	T bl_out1 = 0;
+	T bl_out2 = 0;
+
+	T o_out1l = 0;
+	T o_out2l = 0;
+
+	T s1l = 0;
+	T s2l = 0;
+	T s3l = 0;
+
+	T src_k = 0;
+	T src_p = 0;
+	T src_r = 0;
+	T tgt_k = 0;
+	T tgt_p = 0;
+	T tgt_r = 0;
+	T d_k = 0;
+	T d_p = 0;
+	T d_r = 0;
+
+	T x = 0;
+	T y1 = 0;
+	T y2 = 0;
+	T y3 = 0;
+	T y4 = 0;
+
+	T oldx = 0;
+	T oldy1 = 0;
+	T oldy2 = 0;
+	T oldy3 = 0;
+	T oldy4 = 0;
+
+	T ftype;
+	T cutoff;
+	T res;
+	T outgain;
+
+	T outValue;
+
+	void setType(T ftypeV) {
+		ftype = ftypeV;
+	}
+
+	void setCutoff(T cutoffV) {
+		cutoff = cutoffV;
+	}
+
+	void setRes(T resV) {
+		res = resV;
+	}
+
+	void setGain(T outgainV) {
+		outgain = outgainV;
+	}
+
+	void process(T in, float rate) {
+		T out;
+		T f = 2 * cutoff / rate;
+		tgt_k = 3.6 * f - 1.6 * f * f - 1;
+		tgt_p = (tgt_k + 1) * 0.5;
+		T scale = simd::pow(M_E, (1 - tgt_p) * 1.386249);
+		tgt_r = res * scale;
+
+		d_p = tgt_p - src_p;
+		tp = src_p;
+		src_p = tgt_p;
+		d_k = tgt_k - src_k;
+		tk = src_k;
+		src_k = tgt_k;
+		d_r = tgt_r - src_r;
+		tr = src_r;
+		src_r = tgt_r;
+
+		tk += d_k;
+		tp += d_p;
+		tr += d_r;
+
+		//filter
+		x = in - tr * y4;
+
+		y1 = x * tp + oldx * tp - tk * y1;
+		y2 = y1 * tp + oldy1 * tp - tk * y2;
+		y3 = y2 * tp + oldy2 * tp - tk * y3;
+		y4 = y3 * tp + oldy3 * tp - tk * y4;
+
+		oldx = x;
+		oldy1 = y1;
+		oldy2 = y2;
+		oldy3 = y3;
+
+		if (ftype[0] == 0) {
+			out = y4;
+		}
+		if (ftype[0] == 1) {
+			out = 6 * (y3 - y4);
+		}
+		if (ftype[0] == 2) {
+			out = in - y4;
+		}
+
+		out *= outgain;
+
+		outValue = simd::clamp(out, -5.f, +5.f);
+	}
+
+	T out() {
+		return outValue;
+	}
+};
+
 struct Filtah : Module {
 	enum ParamIds {
 		_SL1_PARAM,		// Type: LP, BP, HP
@@ -25,6 +168,8 @@ struct Filtah : Module {
 		NUM_LIGHTS
 	};
 
+	_Filter<16, 16, float_4> fil[4];
+
 	Filtah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_SL1_PARAM, 0, 2, 0, "LP BP HP");
@@ -33,140 +178,42 @@ struct Filtah : Module {
 		configParam(_SL5_PARAM, -25, 25, 0, "dB");
 	}
 
-	float cDenorm = 10 ^ -30;
-	float mv = powf(2, -0.2 / 6);
-
-	//fir restoration
-	float c1 = 1;
-	float c2 = -0.75;
-	float c3 = 0.17;
-	float fgain = 5;
-
-	//fir bandlimit
-	float bl_c1 = 0.52;
-	float bl_c2 = 0.54;
-	float bl_c3 = -0.02;
-
-	float tk = 0;
-	float tp = 0;
-	float tr = 0;
-
-	float ps_out1l = 0;
-	float ps_out2l = 0;
-
-	float o_in1l = 0;
-	float o_in2l = 0;
-
-	float bl1_1 = 0;
-	float bl2_1 = 0;
-	float bl3_1 = 0;
-	float bl1_2 = 0;
-	float bl2_2 = 0;
-	float bl3_2 = 0;
-
-	float bl_out1 = 0;
-	float bl_out2 = 0;
-
-	float o_out1l = 0;
-	float o_out2l = 0;
-
-	float s1l = 0;
-	float s2l = 0;
-	float s3l = 0;
-
-	float src_k = 0;
-	float src_p = 0;
-	float src_r = 0;
-	float tgt_k = 0;
-	float tgt_p = 0;
-	float tgt_r = 0;
-	float d_k = 0;
-	float d_p = 0;
-	float d_r = 0;
-
-	float x = 0;
-	float y1 = 0;
-	float y2 = 0;
-	float y3 = 0;
-	float y4 = 0;
-
-	float oldx = 0;
-	float oldy1 = 0;
-	float oldy2 = 0;
-	float oldy3 = 0;
-	float oldy4 = 0;
-
-	float in = 0;
-	float out = 0;
-
 	void process(const ProcessArgs& args) override;
 };
 
 void Filtah::process(const ProcessArgs& args) {
 	float ftype = params[_SL1_PARAM].getValue();
-	float sx = 16 + params[_SL2_PARAM].getValue() * 1.20103;
-	float res = params[_SL3_PARAM].getValue();
+	float_4 sx = 16 + params[_SL2_PARAM].getValue() * 1.20103;
+	float_4 res = params[_SL3_PARAM].getValue();
 	float outgain = powf(10, params[_SL5_PARAM].getValue() / 20);
 
-	if (inputs[_MODC_INPUT].isConnected())
-		sx *= inputs[_MODC_INPUT].getVoltage() / 10;
+	// Iterate over each channel
+	int channels = max(inputs[_SP0_INPUT].getChannels(), 1);
+	for (int c = 0; c < channels; c += 4) {
+		// Get the filter
+		auto* filter = &fil[c / 4];
 
-	if (inputs[_MODR_INPUT].isConnected())
-		res *= inputs[_MODR_INPUT].getVoltage() / 10;
+		if (inputs[_MODC_INPUT].isConnected())
+			sx *= inputs[_MODC_INPUT].getVoltageSimd<float_4>(c) / 10;
+		float_4 cutoff = floor(exp(sx * log(1.059)) * 8.17742);
+		if (inputs[_MODR_INPUT].isConnected())
+			res *= inputs[_MODR_INPUT].getVoltageSimd<float_4>(c) / 10;
 
-	float spl0 = inputs[_SP0_INPUT].getVoltage();
+		float_4 ftypeV = ftype;
+		filter->setType(ftypeV);
+		float_4 cutoffV = cutoff;
+		filter->setCutoff(cutoffV);
+		float_4 resV = res;
+		filter->setRes(resV);
+		float_4 outgainV = outgain;
+		filter->setGain(outgainV);
 
-	float cutoff = floor(exp(sx * log(1.059)) * 8.17742);
+		float_4 spl0 = inputs[_SP0_INPUT].getVoltageSimd<float_4>(c);
 
-	float f = 2 * cutoff / args.sampleRate;
-	tgt_k = 3.6 * f - 1.6 * f * f - 1;
-	tgt_p = (tgt_k + 1) * 0.5;
-	float scale = powf(M_E, (1 - tgt_p) * 1.386249);
-	tgt_r = res * scale;
-
-	d_p = tgt_p - src_p;
-	tp = src_p;
-	src_p = tgt_p;
-	d_k = tgt_k - src_k;
-	tk = src_k;
-	src_k = tgt_k;
-	d_r = tgt_r - src_r;
-	tr = src_r;
-	src_r = tgt_r;
-
-	tk += d_k;
-	tp += d_p;
-	tr += d_r;
-
-	float in = spl0;
-
-	//filter
-	x = in - tr * y4;
-
-	y1 = x * tp + oldx * tp - tk * y1;
-	y2 = y1 * tp + oldy1 * tp - tk * y2;
-	y3 = y2 * tp + oldy2 * tp - tk * y3;
-	y4 = y3 * tp + oldy3 * tp - tk * y4;
-
-	oldx = x;
-	oldy1 = y1;
-	oldy2 = y2;
-	oldy3 = y3;
-
-	if (ftype == 0) {
-		out = y4;
+		filter->process(spl0, args.sampleRate);
+		outputs[_SP0_OUTPUT].setVoltageSimd(filter->out(), c);
 	}
-	if (ftype == 1) {
-		out = 6 * (y3 - y4);
-	}
-	if (ftype == 2) {
-		out = in - y4;
-	}
-
-	out *= outgain;
-
-	spl0 = clamp(out, -5.0f, +5.0f);
-	outputs[_SP0_OUTPUT].setVoltage(spl0);
+	outputs[_SP0_OUTPUT].setChannels(channels);
 }
 
 struct FiltahWidget : ModuleWidget {

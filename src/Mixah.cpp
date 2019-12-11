@@ -36,11 +36,11 @@ struct Mixah : Module {
 void Mixah::process(const ProcessArgs& args) {
 	float mix;
 	if (inputs[_MOD_INPUT].isConnected()) {
-		mix = (5.0f + clamp(inputs[_MOD_INPUT].getVoltage(), -5.f, 5.0f)) / 10;
+		mix = (5.f + clamp(inputs[_MOD_INPUT].getVoltage(), -5.f, 5.f)) / 10;
 	} else {
 		mix = params[_KNOB_PARAM].getValue();
 	}
-	mix = 1.0f - mix;
+	mix = 1.f - mix;
 	float out;
 	float inA, inB;
 	// Iterate over each channel

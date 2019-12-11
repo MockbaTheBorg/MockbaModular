@@ -35,7 +35,7 @@ struct Selectah : Module {
 void Selectah::process(const ProcessArgs& args) {
 	int selection;
 	if (inputs[_SEL_INPUT].isConnected()) {
-		selection = clamp(floor(inputs[_SEL_INPUT].getVoltage() / 2.5f), 0.0f, 3.0f);
+		selection = clamp(floor(inputs[_SEL_INPUT].getVoltage() / 2.5f), 0.f, 3.f);
 	} else {
 		selection = int(params[_SELECT_PARAM].getValue());
 	}

@@ -28,6 +28,13 @@ void init(Plugin* p) {
 	p->addModel(modelCZReso1);
 	p->addModel(modelCZReso2);
 	p->addModel(modelCZReso3);
+	p->addModel(modelMaugTriangle);
+	p->addModel(modelMaugShark);
+	p->addModel(modelMaugSaw);
+	p->addModel(modelMaugSaw2);
+	p->addModel(modelMaugSquare);
+	p->addModel(modelMaugSquare2);
+	p->addModel(modelMaugSquare3);
 	p->addModel(modelComparator);
 	p->addModel(modelDualBUFFER);
 	p->addModel(modelDualNOT);

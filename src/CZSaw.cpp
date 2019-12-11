@@ -7,13 +7,15 @@ template <int OVERSAMPLE, int QUALITY, typename T>
 struct _Saw {
 	T freq;
 	T shape;
-	T phase = 0.0f;
-	T outValue = 0.0f;
+	T phase = 0.f;
+	T outValue = 0.f;
 
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
 
 	void setPitch(T pitchV) {
 		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
+		for (int i = 0; i < 4; i++)
+			freq[i] += i / DETUNE;
 	}
 
 	void setShape(T shapeV) {
@@ -34,7 +36,7 @@ struct _Saw {
 		// Calculate the wave step
 		T l = 0.5f - (shape * 0.5f);
 		T a = phase * ((0.5f - l) / l);
-		T b = (-phase + 1.0f) * ((0.5f - l) / (1.0f - l));
+		T b = (-phase + 1.f) * ((0.5f - l) / (1.f - l));
 		T m = phase + simd::fmin(a, b);
 		T v = simd::cos(m * M_2PI);
 		return v;
@@ -73,7 +75,7 @@ struct CZSaw : Module {
 		configParam(_LFO_PARAM, 0, 1, 0, "OFF ON");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
-		configParam(_SHAPE_PARAM, 0.0f, 10.0f, 0.0f, "Shape");
+		configParam(_SHAPE_PARAM, 0.f, 10.f, 0.f, "Shape");
 	}
 
 	void onAdd() override;

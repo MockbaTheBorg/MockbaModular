@@ -7,17 +7,19 @@ template <int OVERSAMPLE, int QUALITY, typename T>
 struct _Reso3 {
 	T freq;
 	T shape;
-	T phase = 0.0f;
-	T outValue = 0.0f;
+	T phase = 0.f;
+	T outValue = 0.f;
 
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
 
 	void setPitch(T pitchV) {
 		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
+		for (int i = 0; i < 4; i++)
+			freq[i] += i / DETUNE;
 	}
 
 	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.0f, 10.0f) * 0.1f;
+		shape = simd::clamp(shapeV, 0.f, 10.f) * 0.1f;
 	}
 
 	void process(float delta) {
@@ -32,8 +34,8 @@ struct _Reso3 {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T w = simd::fmin(2.0f - (phase * 2.0f), 1);
-		T m = phase * ((.0625 + shape) * 16.0f);
+		T w = simd::fmin(2.f - (phase * 2.f), 1);
+		T m = phase * ((.0625 + shape) * 16.f);
 		T v = simd::cos(m * M_2PI) * w + (1 - w);
 		return v;
 	}
@@ -69,7 +71,7 @@ struct CZReso3 : Module {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
-		configParam(_SHAPE_PARAM, 0.0f, 10.0f, 0.0f, "Shape");
+		configParam(_SHAPE_PARAM, 0.f, 10.f, 0.f, "Shape");
 	}
 
 	void onAdd() override;

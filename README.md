@@ -64,6 +64,13 @@ These modules precisely recreate the classic Casio CZ series Phase Distortion wa
 The Saw, Square and Pulse oscillators can also work as LFOs.<br>
 If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
 
+# Maug Series
+![Alt text](./screenshot4.png)
+
+These modules recreate the classic Moog waveforms.<br>
+All the oscillators can also work as LFOs.<br>
+If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
+
 # Logic Series
 ![Alt text](./screenshot3.png)
 

@@ -94,7 +94,6 @@ void Shapah::process(const ProcessArgs& args) {
 		attacking[c / 4] = simd::ifelse(gate[c / 4], attacking[c / 4], float_4::mask());
 		outputs[_ADSR_OUTPUT].setVoltageSimd(10.f * env[c / 4], c);
 	}
-
 	outputs[_ADSR_OUTPUT].setChannels(channels);
 }
 

@@ -43,3 +43,9 @@ std::string loadBack() {
 	json_decref(settingsJ);
 	return ret;
 }
+
+float randomFloat()
+{
+	float r = (float)rand() / (float)RAND_MAX;
+	return r;
+}
