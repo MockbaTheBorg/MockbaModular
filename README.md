@@ -1,5 +1,5 @@
 # Mockba Modular
- Mockba's modules for VCV Rack
+Mockba's modules for VCV Rack
 
 This is a small collection of modules I have created out of pure necessity.<br>
 I believe these modules might prove useful to others. Please feel free to use them.
@@ -12,10 +12,12 @@ A simple logo blank just because everyone else seems to have one.
 ## Feidah
 Small fader (attenuator) module I use to control volume levels, etc.<br>
 If the input is disconnedted, Feidah becomes a 0V -> 10V source.<br>
+The VCA input allows Feidah to be used as a simple VCA.<br>
 This is actually the first module I made, evah!
 
 ## FeidahS
 Small stereo fader module. Feidah's big brother.<br>
+The VCA input allows FeidahS to be used as a simple VCA.<br>
 Doesn't have voltage source functionality.
 
 ## Filtah
@@ -23,7 +25,13 @@ Simple Moog based multimode filter.
 
 ## Mixah
 Small two signal mixer (crossfader) for voltages.<br>
+The VCA input allows Mixah to be used as a simple VCA.<br>
+There also a switch to reverse chanel B's phase if needed.<br>
 If the inputs are disconnected, Mixah becomes a -5V -> 5V source.
+
+## Mixah3
+Small three signal mixer for voltages.<br>
+Used to mix signals when making classic 3 oscillator synths.
 
 ## Dividah
 Simple clock divider based on inverse counting, so all the clock outputs will start in sync.
@@ -32,7 +40,8 @@ Simple clock divider based on inverse counting, so all the clock outputs will st
 Simple binary counter/divider, can be used as divider but the clock outputs won't start in sync.
 
 ## Selectah
-Simple 4 to 1 selector, normally used to manually select waves from a 4 output oscillator.
+Simple 4 to 1 selector, normally used to select waves from a 4 output oscillator.<br>
+The inputs can also be automatically selected via the "mod" port.
 
 ## Shapah
 Simple envelope shaper with classic ADSR controls.
@@ -41,7 +50,8 @@ Simple envelope shaper with classic ADSR controls.
 Simple sample and hold with trigger input.
 
 ## Pannah
-Simple panning module. 
+Simple panning module.<br>
+The panning can be modulated via the "mod" port.
 
 ## UDPClockMaster (Mastah)
 Clock/Reset UDP broadcaster.<br>
@@ -62,24 +72,26 @@ The little status light illuminates red if there's any issue establishing the UD
 
 These modules precisely recreate the classic Casio CZ series Phase Distortion waveforms.<br>
 The Saw, Square and Pulse oscillators can also work as LFOs.<br>
-If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
+If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.<br>
+The CZOsc module merges all the CZ oscillators together.
 
 # Maug Series
 ![Alt text](./screenshot4.png)
 
 These modules recreate the classic Moog waveforms.<br>
 All the oscillators can also work as LFOs.<br>
-If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.
+If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.<br>
+The MaugOsc module merges all the Maug oscillators together.
 
 # Logic Series
 ![Alt text](./screenshot3.png)
 
-These modules implement multiple logic gates and functions.<br>
-The NOT module can work as a voltage inverter (phase inverter) when in analog mode.
+These modules implement multiple boolean logic gates and functions.<br>
+The NOT module can also work as a voltage inverter (phase inverter) when analog mode is selected.
 
 ## Background Color
 The default background color can be replaced by changing the svg file on the json configuration.<br>
-Just add an item called "Background" with the path to the background image filename. Like so:<br>
+Just add or modify the item called "Background" with the path to the background image filename. Like so:<br>
 ```
 {
   "Background": "res/Empty_gray.svg",

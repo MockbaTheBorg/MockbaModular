@@ -34,9 +34,9 @@ struct _Reso2 {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T w = simd::fmin(2.f - (phase * 2.f), phase * 2.f);
-		T m = simd::fmod(phase * ((.0625 + shape) * 16.f), 1);
-		T v = simd::cos(m * M_2PI) * w + (1 - w);
+		T a = simd::fmin(2.f - (phase + phase), phase + phase);
+		T b = simd::fmod(phase * ((.0625 + shape) * 16.f), 1);
+		T v = simd::cos(b * M_2PI) * a + (1 - a);
 		return v;
 	}
 

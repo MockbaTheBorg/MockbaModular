@@ -36,8 +36,8 @@ struct _Pulse {
 		// Calculate the wave step
 		T a = (1.f - phase) / (1.f - shape);
 		T b = simd::fmax(0.f, 1.f - a);
-		T m = simd::fmin(a, b);
-		T v = simd::cos(m * M_2PI);
+		T c = simd::fmin(a, b);
+		T v = simd::cos(c * M_2PI);
 		return v;
 	}
 
@@ -95,7 +95,7 @@ void CZPulse::process(const ProcessArgs& args) {
 	// Get the frequency parameters
 	float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
 	// LFO mode
-	if (params[_LFO_PARAM].getValue() == 1)
+	if (params[_LFO_PARAM].getValue())
 		freqParam = (freqParam * 2) - 5;
 	freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
 	// Get the shape parameter

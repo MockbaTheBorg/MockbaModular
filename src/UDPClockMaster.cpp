@@ -9,6 +9,7 @@
 void saveIPAddress(const char* IPAddress) {
 	json_t* settingsJ = json_object();
 	json_object_set_new(settingsJ, "IPAddress", json_string(IPAddress));
+	json_object_set_new(settingsJ, "Background", json_string(BGCOLOR.c_str()));
 	std::string settingsFilename = asset::user("MockbaModular.json");
 	FILE* file = fopen(settingsFilename.c_str(), "w");
 	if (file) {

@@ -34,11 +34,11 @@ struct _DblSine {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T l = 0.5f - (shape * 0.5f);
-		T a = phase * ((0.5f - l) / l);
-		T b = (-phase + 1.f) * ((0.5f - l) / (1.f - l));
-		T m = phase + simd::fmin(a, b);
-		T v = simd::cos(2.f * m * M_2PI);
+		T a = 0.5f - (shape * 0.5f);
+		T b = phase * ((0.5f - a) / a);
+		T c = (-phase + 1.f) * ((0.5f - a) / (1.f - a));
+		T d = phase + simd::fmin(b, c);
+		T v = simd::cos(2.f * d * M_2PI);
 		return v;
 	}
 

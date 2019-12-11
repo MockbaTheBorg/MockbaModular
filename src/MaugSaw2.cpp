@@ -29,7 +29,7 @@ struct _Saw2 {
 
 	T oscStep(T phase) {
 		// Calculate the wave step
-		T a = 2.f * (1.f - phase) - 1.f;
+		T a = (1.f - phase) + (1.f - phase) - 1.f;
 		T b = (a * a - 1) / 4;
 		T v = a + b;
 		return v;

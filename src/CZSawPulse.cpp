@@ -37,8 +37,8 @@ struct _SawPulse {
 		T a = -2.f * phase + 2.f;
 		T b = (-a + 1.f) * (shape / (1.f - shape));
 		T c = 0.5f * (a - simd::fmin(a, b));
-		T m = simd::fmin(c, phase);
-		T v = simd::cos(m * M_2PI);
+		T d = simd::fmin(c, phase);
+		T v = simd::cos(d * M_2PI);
 		return v;
 	}
 

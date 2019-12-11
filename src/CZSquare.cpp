@@ -34,11 +34,11 @@ struct _Square {
 
 	T oscStep(T phase, T shape) {
 		// Calculate the wave step
-		T l = simd::sgn(0.5f - phase);
-		T a = simd::fmod(phase * 2.f, 1.f);
-		T b = (-a + 1.f) * (shape / (1.f - shape));
-		T m = 0.5f * (a - simd::fmin(a, b));
-		T v = simd::cos(m * M_2PI) * l;
+		T a = simd::sgn(0.5f - phase);
+		T b = simd::fmod(phase + phase, 1.f);
+		T c = (-b + 1.f) * (shape / (1.f - shape));
+		T d = 0.5f * (b - simd::fmin(b, c));
+		T v = simd::cos(d * M_2PI) * a;
 		return v;
 	}
 
@@ -96,7 +96,7 @@ void CZSquare::process(const ProcessArgs& args) {
 	// Get the frequency parameters
 	float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
 	// LFO mode
-	if (params[_LFO_PARAM].getValue() == 1)
+	if (params[_LFO_PARAM].getValue())
 		freqParam = (freqParam * 2) - 5;
 	freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
 	// Get the shape parameter

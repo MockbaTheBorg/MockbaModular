@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.959798"
-     inkscape:cx="-31.09208"
-     inkscape:cy="396.18967"
+     inkscape:zoom="0.70000001"
+     inkscape:cx="-291.13965"
+     inkscape:cy="454.92788"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -189,6 +189,13 @@
        inkscape:locked="false"
        inkscape:label=""
        inkscape:color="rgb(0,255,0)" />
+    <sodipodi:guide
+       position="7.5000003,122.5"
+       orientation="0,1"
+       id="guide1557"
+       inkscape:locked="false"
+       inkscape:label=""
+       inkscape:color="rgb(0,0,255)" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -198,7 +205,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -210,7 +217,7 @@
      style="display:inline">
     <g
        aria-label="mockba modular"
-       transform="rotate(90,0.28860249,-0.33815614)"
+       transform="matrix(0,1.207108,-1.207108,0,-1.0922047,-36.348504)"
        style="font-style:normal;font-weight:normal;font-size:2.82222223px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        id="text925">
       <path

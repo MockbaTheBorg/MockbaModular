@@ -14,6 +14,7 @@ void init(Plugin* p) {
 	p->addModel(modelFeidahS);
 	p->addModel(modelFiltah);
 	p->addModel(modelMixah);
+	p->addModel(modelMixah3);
 	p->addModel(modelDividah);
 	p->addModel(modelCountah);
 	p->addModel(modelSelectah);
@@ -28,6 +29,7 @@ void init(Plugin* p) {
 	p->addModel(modelCZReso1);
 	p->addModel(modelCZReso2);
 	p->addModel(modelCZReso3);
+	p->addModel(modelCZOsc);
 	p->addModel(modelMaugTriangle);
 	p->addModel(modelMaugShark);
 	p->addModel(modelMaugSaw);
@@ -35,6 +37,7 @@ void init(Plugin* p) {
 	p->addModel(modelMaugSquare);
 	p->addModel(modelMaugSquare2);
 	p->addModel(modelMaugSquare3);
+	p->addModel(modelMaugOsc);
 	p->addModel(modelComparator);
 	p->addModel(modelDualBUFFER);
 	p->addModel(modelDualNOT);

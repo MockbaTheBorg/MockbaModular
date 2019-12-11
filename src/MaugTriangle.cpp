@@ -29,9 +29,9 @@ struct _Triangle {
 
 	T oscStep(T phase) {
 		// Calculate the wave step
-		T a = 2.f * phase - 1.f;
+		T a = phase + phase - 1.f;
 		T b = simd::sgn(a);
-		T c = simd::fmod(4.f * phase, 2.f) - 1.f;
+		T c = simd::fmod(phase + phase + phase + phase, 2.f) - 1.f;
 		T d = (c * c - 1) / 3;
 		T v = b * d - b * c;
 		return v;

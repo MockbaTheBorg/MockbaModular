@@ -29,8 +29,8 @@ struct _Shark {
 
 	T oscStep(T phase) {
 		// Calculate the wave step
-		T a = simd::fmod(3.f * phase, 1.5f) - 1.f;
-		T b = 1.f - simd::fmod(4.f * phase, 2.f);
+		T a = simd::fmod(phase + phase + phase, 1.5f) - 1.f;
+		T b = 1.f - simd::fmod(phase + phase + phase + phase, 2.f);
 		T c = (b * b - 1.f) / 5.f;
 		T v = simd::ifelse(phase < 0.5f, a - c, b + c);
 		return v;
