@@ -21,7 +21,7 @@ using simd::float_4;
 	#include <arpa/inet.h>                // Needed for sockets stuff
 	#include <fcntl.h>                    // Needed for sockets stuff
 	#include <unistd.h>
-#de	fine NOSOCKET -1
+#define NOSOCKET -1
 	#define NOBIND -1
 #endif
 
