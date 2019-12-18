@@ -74,6 +74,7 @@ These modules precisely recreate the classic Casio CZ series Phase Distortion wa
 The Saw, Square and Pulse oscillators can also work as LFOs.<br>
 If the LFO mode is selected, the FINE knob becomes a 5V offset for the output.<br>
 The CZOsc module merges all the CZ oscillators together.
+If the shape modulation input is connected the shape knob works as attenuation for the shape modulation signal.
 
 # Maug Series
 ![Alt text](./screenshot4.png)
