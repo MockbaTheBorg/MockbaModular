@@ -69,7 +69,7 @@ struct _Osc {
 			b = -a;
 			v = simd::ifelse(phase < 0.17f, b, a - 0.1f);
 			break;
-		case 6:
+		case 6:		// Inv Saw
 			a = (1.f - phase) + (1.f - phase) - 1.f;
 			b = (a * a - 1) / 4;
 			v = a + b;

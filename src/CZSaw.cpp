@@ -19,7 +19,7 @@ struct _Saw {
 	}
 
 	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.1f, 9.9f) * 0.1f;
+		shape = simd::clamp(shapeV, 0.01f, 0.99f);
 	}
 
 	void process(float delta) {
@@ -75,7 +75,7 @@ struct CZSaw : Module {
 		configParam(_LFO_PARAM, 0, 1, 0, "OFF ON");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
-		configParam(_SHAPE_PARAM, 0.f, 10.f, 0.f, "Shape");
+		configParam(_SHAPE_PARAM, 0.f, 1.f, 0.f, "Shape");
 	}
 
 	void onAdd() override;
@@ -112,7 +112,8 @@ void CZSaw::process(const ProcessArgs& args) {
 		oscillator->setPitch(pitch);
 		// Set the shape
 		float_4 shape = shapeParam;
-		shape += inputs[_MODS_INPUT].getVoltageSimd<float_4>(c);
+		if (inputs[_MODS_INPUT].isConnected())
+			shape *= inputs[_MODS_INPUT].getVoltageSimd<float_4>(c) / 10.f;
 		oscillator->setShape(shape);
 		// Process and output
 		oscillator->process(args.sampleTime);

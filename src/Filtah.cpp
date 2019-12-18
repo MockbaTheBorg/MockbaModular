@@ -5,46 +5,9 @@
 
 template <int OVERSAMPLE, int QUALITY, typename T>
 struct _Filter {
-	T cDenorm = 10 ^ -30;
-	T mv = powf(2, -0.2 / 6);
-
-	//fir restoration
-	T c1 = 1;
-	T c2 = -0.75;
-	T c3 = 0.17;
-	T fgain = 5;
-
-	//fir bandlimit
-	T bl_c1 = 0.52;
-	T bl_c2 = 0.54;
-	T bl_c3 = -0.02;
-
 	T tk = 0;
 	T tp = 0;
 	T tr = 0;
-
-	T ps_out1l = 0;
-	T ps_out2l = 0;
-
-	T o_in1l = 0;
-	T o_in2l = 0;
-
-	T bl1_1 = 0;
-	T bl2_1 = 0;
-	T bl3_1 = 0;
-	T bl1_2 = 0;
-	T bl2_2 = 0;
-	T bl3_2 = 0;
-
-	T bl_out1 = 0;
-	T bl_out2 = 0;
-
-	T o_out1l = 0;
-	T o_out2l = 0;
-
-	T s1l = 0;
-	T s2l = 0;
-	T s3l = 0;
 
 	T src_k = 0;
 	T src_p = 0;
@@ -68,12 +31,12 @@ struct _Filter {
 	T oldy3 = 0;
 	T oldy4 = 0;
 
-	T ftype;
-	T cutoff;
-	T res;
-	T outgain;
+	T ftype = 0;
+	T cutoff = 0;
+	T res = 0;
+	T outgain = 0;
 
-	T outValue;
+	T outValue = 0;
 
 	void setType(T ftypeV) {
 		ftype = ftypeV;

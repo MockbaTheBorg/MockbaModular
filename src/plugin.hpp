@@ -14,12 +14,6 @@ struct _Screw : SvgScrew {
 	}
 };
 
-struct _KnobTop : SvgScrew {
-	_KnobTop() {
-		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/knob2a.svg")));
-	}
-};
-
 struct _Knob : RoundKnob {
 	_Knob() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/knob.svg")));
