@@ -117,3 +117,6 @@ I am still trying to figure out the reason for this.<br>
 THESE MODULES ARE ALL WORK IN PROGRESS, EXPECT MISBEHAVIORS!<br>
 Usage of these modules might cause issues like electricity spikes, cpu core meltdowns or planetary energy disruptions, be advised.<br>
 Help, suggestions and of course donations are much welcome.<br>
+
+Make sure to check also my commercial modules:
+MM_Oscah - Special Vintage Oscillators: https://github.com/MockbaTheBorg/VCVProducts/tree/master/MM_Oscah
