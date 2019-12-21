@@ -112,7 +112,11 @@ Build still needs to be done via Makefile on the msys2 shell (for Windows) or th
 ## Issues
 Sometimes the Slave won't start when added, if this is the case then close the patch and open it again. This normally fixes the issue.<br>
 I am still trying to figure out the reason for this.<br>
-<br>
+
+## Youtube
+Make sure to visit my youtube channel at https://www.youtube.com/channel/UCEgDINz-Mt1U10gwqInULOQ<br>
+I will start to add videos there regarding these and other modules I am working on.
+
 ## Disclaimer
 THESE MODULES ARE ALL WORK IN PROGRESS, EXPECT MISBEHAVIORS!<br>
 Usage of these modules might cause issues like electricity spikes, cpu core meltdowns or planetary energy disruptions, be advised.<br>
