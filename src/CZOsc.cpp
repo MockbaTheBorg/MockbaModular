@@ -77,17 +77,17 @@ struct _Osc {
 				break;
 			case 5:		// Reso1
 				a = 1.f - phase;
-				b = phase * ((.0625 + shape) * 16.f);
+				b = phase * (.0625 + shape) * 16.f;
 				v = simd::cos(b * M_2PI) * a + phase;
 				break;
 			case 6:		// Reso2
 				a = simd::fmin(2.f - (phase + phase), phase + phase);
-				b = simd::fmod(phase * ((.0625 + shape) * 16.f), 1);
+				b = simd::fmod(phase * (.0625 + shape) * 16.f, 1);
 				v = simd::cos(b * M_2PI) * a + (1 - a);
 				break;
 			case 7:		// Reso3
-				a = simd::fmin(2.f - (phase * phase), 1);
-				b = phase * ((.0625 + shape) * 16.f);
+				a = simd::fmin(2.f - (phase + phase), 1);
+				b = phase * (.0625 + shape) * 16.f;
 				v = simd::cos(b * M_2PI) * a + (1 - a);
 				break;
 		}
