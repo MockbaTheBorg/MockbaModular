@@ -3,46 +3,12 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Pulse {
-	T freq;
-	T shape;
-	T phase = 0.f;
-	T outValue = 0.f;
+struct _Pulse : _MMOsc {
+	_CZWave<float_4> osc;
 
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
-
-	void setPitch(T pitchV) {
-		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
-		for (int i = 0; i < 4; i++)
-			freq[i] += i / DETUNE;
-	}
-
-	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.01f, 0.99f);
-	}
-
-	void process(float delta) {
-		// Calculate phase
-		T deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
-		phase += deltaPhase;
-		phase -= simd::floor(phase);
-
-		outValue = oscStep(phase, shape);
-		outValue += oscMinBlep.process();
-	}
-
-	T oscStep(T phase, T shape) {
+	float_4 oscStep(float_4 phase, float_4 shape, int wave) override {
 		// Calculate the wave step
-		T a = (1.f - phase) / (1.f - shape);
-		T b = simd::fmax(0.f, 1.f - a);
-		T c = simd::fmin(a, b);
-		T v = simd::cos(c * M_2PI);
-		return v;
-	}
-
-	T out() {
-		return outValue;
+		return osc.Pulse(phase, shape);
 	}
 };
 
@@ -67,7 +33,7 @@ struct CZPulse : Module {
 		NUM_LIGHTS
 	};
 
-	_Pulse<16, 16, float_4> osc[4];
+	_Pulse osc[4];
 
 	CZPulse() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -85,6 +51,7 @@ struct CZPulse : Module {
 };
 
 void CZPulse::onAdd() {
+	osc->init();
 }
 
 void CZPulse::onReset() {
@@ -108,7 +75,7 @@ void CZPulse::process(const ProcessArgs& args) {
 		float_4 pitch = freqParam;
 		// Set the pitch
 		pitch += inputs[_MODF_INPUT].getVoltageSimd<float_4>(c);
-		oscillator->setPitch(pitch);
+		oscillator->setPitch(pitch, 1.f);
 		// Set the shape
 		float_4 shape = shapeParam;
 		if (inputs[_MODS_INPUT].isConnected())
@@ -117,7 +84,7 @@ void CZPulse::process(const ProcessArgs& args) {
 		// Process and output
 		oscillator->process(args.sampleTime);
 		float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out() + off, c);
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out() + off, c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }

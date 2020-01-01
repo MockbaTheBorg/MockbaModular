@@ -3,86 +3,6 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Osc {
-	int wave;
-	T freq;
-	T phase = 0.f;
-	T outValue = 0.f;
-
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
-
-	void setWave(int waveV) {
-		wave = waveV;
-	}
-
-	void setPitch(T pitchV) {
-		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
-		for (int i = 0; i < 4; i++)
-			freq[i] += i / DETUNE;
-	}
-
-	void process(float delta) {
-		// Calculate phase
-		T deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
-		phase += deltaPhase;
-		phase -= simd::floor(phase);
-
-		outValue = oscStep(phase, wave);
-		outValue += oscMinBlep.process();
-	}
-
-	T oscStep(T phase, int wave) {
-		// Calculate the wave step
-		T a, b, c, d, v;
-		switch (wave) {
-		case 0:		// Triangle
-			a = phase + phase - 1.f;
-			b = simd::sgn(a);
-			c = simd::fmod(phase + phase + phase + phase, 2.f) - 1.f;
-			d = (c * c - 1) / 3;
-			v = b * d - b * c;
-			break;
-		case 1:		// Shark Tooth
-			a = simd::fmod(phase + phase + phase, 1.5f) - 1.f;
-			b = 1.f - simd::fmod(phase + phase + phase + phase, 2.f);
-			c = (b * b - 1.f) / 5.f;
-			v = simd::ifelse(phase < 0.5f, a - c, b + c);
-			break;
-		case 2:		// Saw
-			a = phase + phase - 1.f;
-			b = (a * a - 1) / 2;
-			v = a - b;
-			break;
-		case 3:		// Square .48
-			a = simd::cos(1.f - phase) - 1.54f;
-			b = -a;
-			v = simd::ifelse(phase < 0.48f, b, a - 0.3f);
-			break;
-		case 4:		// Square .29
-			a = simd::cos(1.f - phase) - 1.54f;
-			b = -a;
-			v = simd::ifelse(phase < 0.29f, b, a - 0.2f);
-			break;
-		case 5:		// Square .17
-			a = simd::cos(1.f - phase) - 1.54f;
-			b = -a;
-			v = simd::ifelse(phase < 0.17f, b, a - 0.1f);
-			break;
-		case 6:		// Inv Saw
-			a = (1.f - phase) + (1.f - phase) - 1.f;
-			b = (a * a - 1) / 4;
-			v = a + b;
-			break;
-		}
-		return v;
-	}
-
-	T out() {
-		return outValue;
-	}
-};
-
 struct MaugOsc : Module {
 	enum ParamIds {
 		_WAVE_PARAM,
@@ -103,7 +23,7 @@ struct MaugOsc : Module {
 		NUM_LIGHTS
 	};
 
-	_Osc<16, 16, float_4> osc[4];
+	_MaugOsc osc[4];
 
 	MaugOsc() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -121,6 +41,7 @@ struct MaugOsc : Module {
 };
 
 void MaugOsc::onAdd() {
+	osc->init();
 }
 
 void MaugOsc::onReset() {
@@ -141,15 +62,16 @@ void MaugOsc::process(const ProcessArgs& args) {
 	for (int c = 0; c < channels; c += 4) {
 		// Get the oscillator
 		auto* oscillator = &osc[c / 4];
+		oscillator->channels = min(channels - c, 4);
 		oscillator->setWave(wave);
 		float_4 pitch = freqParam;
 		// Set the pitch
 		pitch += inputs[_MODF_INPUT].getVoltageSimd<float_4>(c);
-		oscillator->setPitch(pitch);
+		oscillator->setPitch(pitch, 1.f);
 		// Process and output
 		oscillator->process(args.sampleTime);
 		float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out() + off, c);
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out() + off, c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }

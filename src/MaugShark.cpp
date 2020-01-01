@@ -3,44 +3,6 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Shark {
-	T freq;
-	T phase = 0.f;
-	T outValue = 0.f;
-
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
-
-	void setPitch(T pitchV) {
-		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
-		for (int i = 0; i < 4; i++)
-			freq[i] += i / DETUNE;
-	}
-
-	void process(float delta) {
-		// Calculate phase
-		T deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
-		phase += deltaPhase;
-		phase -= simd::floor(phase);
-
-		outValue = oscStep(phase);
-		outValue += oscMinBlep.process();
-	}
-
-	T oscStep(T phase) {
-		// Calculate the wave step
-		T a = simd::fmod(phase + phase + phase, 1.5f) - 1.f;
-		T b = 1.f - simd::fmod(phase + phase + phase + phase, 2.f);
-		T c = (b * b - 1.f) / 5.f;
-		T v = simd::ifelse(phase < 0.5f, a - c, b + c);
-		return v;
-	}
-
-	T out() {
-		return outValue;
-	}
-};
-
 struct MaugShark : Module {
 	enum ParamIds {
 		_LFO_PARAM,
@@ -60,7 +22,7 @@ struct MaugShark : Module {
 		NUM_LIGHTS
 	};
 
-	_Shark<16, 16, float_4> osc[4];
+	_MaugOsc osc[4];
 
 	MaugShark() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -77,6 +39,7 @@ struct MaugShark : Module {
 };
 
 void MaugShark::onAdd() {
+	osc->init();
 }
 
 void MaugShark::onReset() {
@@ -95,14 +58,16 @@ void MaugShark::process(const ProcessArgs& args) {
 	for (int c = 0; c < channels; c += 4) {
 		// Get the oscillator
 		auto* oscillator = &osc[c / 4];
+		oscillator->channels = min(channels - c, 4);
 		float_4 pitch = freqParam;
 		// Set the pitch
 		pitch += inputs[_MODF_INPUT].getVoltageSimd<float_4>(c);
-		oscillator->setPitch(pitch);
+		oscillator->setWave(1.f);
+		oscillator->setPitch(pitch, 1.f);
 		// Process and output
 		oscillator->process(args.sampleTime);
 		float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out() + off, c);
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out() + off, c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }

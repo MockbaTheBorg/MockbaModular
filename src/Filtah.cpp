@@ -3,112 +3,6 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Filter {
-	T tk = 0;
-	T tp = 0;
-	T tr = 0;
-
-	T src_k = 0;
-	T src_p = 0;
-	T src_r = 0;
-	T tgt_k = 0;
-	T tgt_p = 0;
-	T tgt_r = 0;
-	T d_k = 0;
-	T d_p = 0;
-	T d_r = 0;
-
-	T x = 0;
-	T y1 = 0;
-	T y2 = 0;
-	T y3 = 0;
-	T y4 = 0;
-
-	T oldx = 0;
-	T oldy1 = 0;
-	T oldy2 = 0;
-	T oldy3 = 0;
-	T oldy4 = 0;
-
-	T ftype = 0;
-	T cutoff = 0;
-	T res = 0;
-	T outgain = 0;
-
-	T outValue = 0;
-
-	void setType(T ftypeV) {
-		ftype = ftypeV;
-	}
-
-	void setCutoff(T cutoffV) {
-		cutoff = cutoffV;
-	}
-
-	void setRes(T resV) {
-		res = resV;
-	}
-
-	void setGain(T outgainV) {
-		outgain = outgainV;
-	}
-
-	void process(T in, float rate) {
-		T out;
-		T f = 2 * cutoff / rate;
-		tgt_k = 3.6 * f - 1.6 * f * f - 1;
-		tgt_p = (tgt_k + 1) * 0.5;
-		T scale = simd::pow(M_E, (1 - tgt_p) * 1.386249);
-		tgt_r = res * scale;
-
-		d_p = tgt_p - src_p;
-		tp = src_p;
-		src_p = tgt_p;
-		d_k = tgt_k - src_k;
-		tk = src_k;
-		src_k = tgt_k;
-		d_r = tgt_r - src_r;
-		tr = src_r;
-		src_r = tgt_r;
-
-		tk += d_k;
-		tp += d_p;
-		tr += d_r;
-
-		//filter
-		x = in - tr * y4;
-
-		y1 = x * tp + oldx * tp - tk * y1;
-		y2 = y1 * tp + oldy1 * tp - tk * y2;
-		y3 = y2 * tp + oldy2 * tp - tk * y3;
-		y4 = y3 * tp + oldy3 * tp - tk * y4;
-
-		oldx = x;
-		oldy1 = y1;
-		oldy2 = y2;
-		oldy3 = y3;
-
-		if (ftype[0] == 0) {
-			out = y4;
-		}
-		if (ftype[0] == 1) {
-			out = 6 * (y3 - y4);
-		}
-		if (ftype[0] == 2) {
-			out = in - y4;
-		}
-
-		out *= outgain;
-
-		outValue = simd::clamp(out, -5.f, +5.f);
-	}
-
-	T out() {
-		return outValue;
-	}
-};
-
 struct Filtah : Module {
 	enum ParamIds {
 		_SL1_PARAM,		// Type: LP, BP, HP
@@ -131,7 +25,7 @@ struct Filtah : Module {
 		NUM_LIGHTS
 	};
 
-	_Filter<16, 16, float_4> fil[4];
+	_Filter fil[4];
 
 	Filtah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -172,9 +66,8 @@ void Filtah::process(const ProcessArgs& args) {
 		filter->setGain(outgainV);
 
 		float_4 spl0 = inputs[_SP0_INPUT].getVoltageSimd<float_4>(c);
-
 		filter->process(spl0, args.sampleRate);
-		outputs[_SP0_OUTPUT].setVoltageSimd(filter->out(), c);
+		outputs[_SP0_OUTPUT].setVoltageSimd(filter->_Out(), c);
 	}
 	outputs[_SP0_OUTPUT].setChannels(channels);
 }

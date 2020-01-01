@@ -3,47 +3,12 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-template <int OVERSAMPLE, int QUALITY, typename T>
-struct _DblSine {
-	T freq;
-	T shape;
-	T phase = 0.f;
-	T outValue = 0.f;
+struct _DblSine : _MMOsc {
+	_CZWave<float_4> osc;
 
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
-
-	void setPitch(T pitchV) {
-		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
-		for (int i = 0; i < 4; i++)
-			freq[i] += i / DETUNE;
-	}
-
-	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.01f, 0.99f);
-	}
-
-	void process(float delta) {
-		// Calculate phase
-		T deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
-		phase += deltaPhase;
-		phase -= simd::floor(phase);
-
-		outValue = oscStep(phase, shape);
-		outValue += oscMinBlep.process();
-	}
-
-	T oscStep(T phase, T shape) {
+	float_4 oscStep(float_4 phase, float_4 shape, int wave) override {
 		// Calculate the wave step
-		T a = 0.5f - (shape * 0.5f);
-		T b = phase * ((0.5f - a) / a);
-		T c = (-phase + 1.f) * ((0.5f - a) / (1.f - a));
-		T d = phase + simd::fmin(b, c);
-		T v = simd::cos(2.f * d * M_2PI);
-		return v;
-	}
-
-	T out() {
-		return outValue;
+		return osc.DblSine(phase, shape);
 	}
 };
 
@@ -67,7 +32,7 @@ struct CZDblSine : Module {
 		NUM_LIGHTS
 	};
 
-	_DblSine<16, 16, float_4> osc[4];
+	_DblSine osc[4];
 
 	CZDblSine() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -84,6 +49,7 @@ struct CZDblSine : Module {
 };
 
 void CZDblSine::onAdd() {
+	osc->init();
 }
 
 void CZDblSine::onReset() {
@@ -104,7 +70,7 @@ void CZDblSine::process(const ProcessArgs& args) {
 		float_4 pitch = freqParam;
 		// Set the pitch
 		pitch += inputs[_MODF_INPUT].getVoltageSimd<float_4>(c);
-		oscillator->setPitch(pitch);
+		oscillator->setPitch(pitch, 1.f);
 		// Set the shape
 		float_4 shape = shapeParam;
 		if (inputs[_MODS_INPUT].isConnected())
@@ -112,7 +78,7 @@ void CZDblSine::process(const ProcessArgs& args) {
 		oscillator->setShape(shape);
 		// Process and output
 		oscillator->process(args.sampleTime);
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out(), c);
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out(), c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }

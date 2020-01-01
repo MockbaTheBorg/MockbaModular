@@ -3,99 +3,41 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
-template <int OVERSAMPLE, int QUALITY, typename T>
-struct _Osc {
-	int wave;
-	T freq;
-	T shape;
-	T phase = 0.f;
-	T outValue = 0.f;
+struct _CZOsc : _MMOsc {
+	_CZWave<float_4> osc;
 
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> oscMinBlep;
-
-	void setWave(int waveV) {
-		wave = waveV;
-	}
-
-	void setPitch(T pitchV) {
-		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitchV + 30) / 1073741824;
-		for (int i = 0; i < 4; i++)
-			freq[i] += i / DETUNE;
-	}
-
-	void setShape(T shapeV) {
-		shape = simd::clamp(shapeV, 0.01f, 0.99f);
-	}
-
-	void process(float delta) {
-		// Calculate phase
-		T deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
-		phase += deltaPhase;
-		phase -= simd::floor(phase);
-
-		outValue = oscStep(phase, wave, shape);
-		outValue += oscMinBlep.process();
-	}
-
-	T oscStep(T phase, int wave, T shape) {
+	float_4 oscStep(float_4 phase, float_4 shape, int wave) override {
 		// Calculate the wave step
-		T a, b, c, d, v;
+		float_4 v;
 		switch (wave) {
-			case 0:		// Saw
-				a = 0.5f - (shape * 0.5f);
-				b = phase * ((0.5f - a) / a);
-				c = (-phase + 1.f) * ((0.5f - a) / (1.f - a));
-				d = phase + simd::fmin(b, c);
-				v = simd::cos(d * M_2PI);
-				break;
-			case 1:		// Square
-				a = simd::sgn(0.5f - phase);
-				b = simd::fmod(phase + phase, 1.f);
-				c = (-b + 1.f) * (shape / (1.f - shape));
-				d = 0.5f * (b - simd::fmin(b, c));
-				v = simd::cos(d * M_2PI) * a;
-				break;
-			case 2:		// Pulse
-				a = (1.f - phase) / (1.f - shape);
-				b = simd::fmax(0.f, 1.f - a);
-				c = simd::fmin(a, b);
-				v = simd::cos(c * M_2PI);
-				break;
-			case 3:		// DblSine
-				a = 0.5f - (shape * 0.5f);
-				b = phase * ((0.5f - a) / a);
-				c = (-phase + 1.f) * ((0.5f - a) / (1.f - a));
-				d = phase + simd::fmin(b, c);
-				v = simd::cos(2.f * d * M_2PI);
-				break;
-			case 4:		// SawPulse
-				a = -2.f * phase + 2.f;
-				b = (-a + 1.f) * (shape / (1.f - shape));
-				c = 0.5f * (a - simd::fmin(a, b));
-				d = simd::fmin(c, phase);
-				v = simd::cos(d * M_2PI);
-				break;
-			case 5:		// Reso1
-				a = 1.f - phase;
-				b = phase * (.0625 + shape) * 16.f;
-				v = simd::cos(b * M_2PI) * a + phase;
-				break;
-			case 6:		// Reso2
-				a = simd::fmin(2.f - (phase + phase), phase + phase);
-				b = simd::fmod(phase * (.0625 + shape) * 16.f, 1);
-				v = simd::cos(b * M_2PI) * a + (1 - a);
-				break;
-			case 7:		// Reso3
-				a = simd::fmin(2.f - (phase + phase), 1);
-				b = phase * (.0625 + shape) * 16.f;
-				v = simd::cos(b * M_2PI) * a + (1 - a);
-				break;
+		case 0:		// Saw
+			v = osc.Saw(phase, shape);
+			break;
+		case 1:		// Square
+			v = osc.Square(phase, shape);
+			break;
+		case 2:		// Pulse
+			v = osc.Pulse(phase, shape);
+			break;
+		case 3:		// DblSine
+			v = osc.DblSine(phase, shape);
+			break;
+		case 4:		// SawPulse
+			v = osc.SawPulse(phase, shape);
+			break;
+		case 5:		// Reso1
+			v = osc.Reso1(phase, shape);
+			break;
+		case 6:		// Reso2
+			v = osc.Reso2(phase, shape);
+			break;
+		case 7:		// Reso3
+			v = osc.Reso3(phase, shape);
+			break;
+		default:
+			v = 0.f;
 		}
 		return v;
-	}
-
-	T out() {
-		return outValue;
 	}
 };
 
@@ -121,7 +63,7 @@ struct CZOsc : Module {
 		NUM_LIGHTS
 	};
 
-	_Osc<16, 16, float_4> osc[4];
+	_CZOsc osc[4];
 
 	CZOsc() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -140,6 +82,7 @@ struct CZOsc : Module {
 };
 
 void CZOsc::onAdd() {
+	osc->init();
 }
 
 void CZOsc::onReset() {
@@ -166,7 +109,7 @@ void CZOsc::process(const ProcessArgs& args) {
 		float_4 pitch = freqParam;
 		// Set the pitch
 		pitch += inputs[_MODF_INPUT].getVoltageSimd<float_4>(c);
-		oscillator->setPitch(pitch);
+		oscillator->setPitch(pitch, 1.f);
 		// Set the shape
 		float_4 shape = shapeParam;
 		if (inputs[_MODS_INPUT].isConnected())
@@ -175,7 +118,7 @@ void CZOsc::process(const ProcessArgs& args) {
 		// Process and output
 		oscillator->process(args.sampleTime);
 		float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->out() + off, c);
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out() + off, c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }
