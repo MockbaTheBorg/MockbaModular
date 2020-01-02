@@ -11,7 +11,7 @@ A simple logo blank just because everyone else seems to have one.
 
 ## Feidah
 Small fader (attenuator) module I use to control volume levels, etc.<br>
-If the input is disconnedted, Feidah becomes a 0V -> 10V source.<br>
+If the input is disconnected, Feidah becomes a 0V -> 10V source.<br>
 The VCA input allows Feidah to be used as a simple VCA.<br>
 This is actually the first module I made, evah!
 
