@@ -37,9 +37,9 @@ void Feidah::process(const ProcessArgs& args) {
 	for (int c = 0; c < channels; ++c) {
 		if (inputs[_VOLTAGE_INPUT].isConnected()) {
 			if (inputs[_VCA_INPUT].isConnected()) {
-				out = inputs[_VOLTAGE_INPUT].getVoltage(c) * atten * (inputs[_VCA_INPUT].getVoltage(c) / 10);
+				out = inputs[_VOLTAGE_INPUT].getPolyVoltage(c) * atten * (inputs[_VCA_INPUT].getPolyVoltage(c) / 10);
 			} else {
-				out = inputs[_VOLTAGE_INPUT].getVoltage(c) * atten;
+				out = inputs[_VOLTAGE_INPUT].getPolyVoltage(c) * atten;
 			}
 		} else {
 			out = params[_KNOB_PARAM].getValue() * 10;

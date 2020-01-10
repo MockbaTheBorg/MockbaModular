@@ -39,16 +39,16 @@ void FeidahS::process(const ProcessArgs& args) {
 	int channels = max(inputs[_LEFT_INPUT].getChannels() , max(inputs[_LEFT_INPUT].getChannels(), 1));
 	for (int c = 0; c < channels; ++c) {
 		if (inputs[_VCA_INPUT].isConnected()) {
-			outL = inputs[_LEFT_INPUT].getVoltage(c) * atten * (inputs[_VCA_INPUT].getVoltage(c) / 10);
+			outL = inputs[_LEFT_INPUT].getPolyVoltage(c) * atten * (inputs[_VCA_INPUT].getPolyVoltage(c) / 10);
 			if (inputs[_RIGHT_INPUT].isConnected()) {
-				outR = inputs[_RIGHT_INPUT].getVoltage(c) * atten * (inputs[_VCA_INPUT].getVoltage(c) / 10);
+				outR = inputs[_RIGHT_INPUT].getPolyVoltage(c) * atten * (inputs[_VCA_INPUT].getPolyVoltage(c) / 10);
 			} else {
 				outR = outL;
 			}
 		} else {
-			outL = inputs[_LEFT_INPUT].getVoltage(c) * atten;
+			outL = inputs[_LEFT_INPUT].getPolyVoltage(c) * atten;
 			if (inputs[_RIGHT_INPUT].isConnected()) {
-				outR = inputs[_RIGHT_INPUT].getVoltage(c) * atten;
+				outR = inputs[_RIGHT_INPUT].getPolyVoltage(c) * atten;
 			} else {
 				outR = outL;
 			}

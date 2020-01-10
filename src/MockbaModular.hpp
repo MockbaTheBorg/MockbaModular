@@ -1,12 +1,11 @@
+// MockbaModular plugins for VCV Rack by Mockba the Borg
+
 #ifndef MOCKBAMODULAR_HPP
 #define MOCKBAMODULAR_HPP
 
-#include <time.h>
+using namespace simd;
 
-using simd::float_4;
-using simd::int32_4;
-
-#define DETUNE_RNG 0.001f	// Osc spread range
+#define DETUNE_RNG 0.002f	// Osc spread range
 #define EXP_FACTOR -3.f		// Bulge factor for the Exponential Curve
 
 #ifdef _WIN32
@@ -40,6 +39,12 @@ using simd::int32_4;
 #ifndef M_PI
 	#define M_PI	3.14159265358979323846
 #endif
+#ifndef M_PI_2
+	#define M_PI_2	1.57079632679489661923
+#endif
+#ifndef M_2_PI
+	#define M_2_PI	0.63661977236758134307
+#endif
 #ifndef M_2PI
 	#define M_2PI	6.28318530717958647692
 #endif
@@ -47,16 +52,16 @@ using simd::int32_4;
 	#define M_E		2.71828182845904523536
 #endif
 
-#define BGCOLOR loadBack()
+#define BGCOLOR loadBack(-1)
 
 // Base Functions
 void saveBack(const std::string& Back);
-std::string loadBack();
+std::string loadBack(int bgSel);
 float randomFloat();
 float detune();
+float_4 detune4();
 
-// simd functions
-float_4 xFade(float_4 s1, float_4 s2, float mix);
+// simd mixing functions
 float_4 mix2(float_4 s1, float_4 m1, float_4 s2, float_4 m2);
 float_4 mix3(float_4 s1, float_4 m1, float_4 s2, float_4 m2, float_4 s3, float_4 m3);
 float_4 mix4(float_4 s1, float_4 m1, float_4 s2, float_4 m2, float_4 s3, float_4 m3, float_4 s4, float_4 m4);
@@ -69,7 +74,7 @@ T expCurve(T x, float f) {
 }
 
 // Cosine Approximation
-template<typename T>
+template <typename T>
 inline T mmCos(T x) noexcept {
 	//	constexpr T tp = 1. / (2. * M_PI);
 	x *= 0.159154943092;
@@ -89,8 +94,6 @@ struct _MMOsc {
 	float_4 detuneMap = 0.f;
 	float_4 phase = 0.f;
 	float_4 outValue = 0.f;
-
-	dsp::MinBlepGenerator<16, 16, float> oscMinBlep[4];
 
 	void setWave(float waveV) {
 		wave = waveV;
@@ -192,8 +195,7 @@ struct _MaugOsc {
 		phase -= simd::floor(phase);
 
 		// Jump sqr when crossing 0, or 1 if backwards
-		float_4 wrapPhase = 0.f;
-		float_4 wrapCrossing = (wrapPhase - (phase - deltaPhase)) / deltaPhase;
+		float_4 wrapCrossing = -(phase - deltaPhase) / deltaPhase;
 		int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
 		if (wrapMask) {
 			for (int i = 0; i < channels; i++) {
@@ -353,7 +355,7 @@ struct _LFO {
 	float freq = 0.f;
 
 	void process(float delta, float speed) {
-		freq = .05f + 200.f * speed;
+		freq = .05f + 199.95f * speed;
 		float deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
 		phase += deltaPhase;
 		phase -= simd::floor(phase);
@@ -551,7 +553,7 @@ struct _ModelVFilter {
 		cutoff = c;
 
 		p = cutoff * (1.8f - 0.8f * cutoff);
-		k = 2.0f * simd::sin(cutoff * M_PI * 0.5f) - 1.0f;
+		k = 2.0f * simd::sin(cutoff * M_PI_2) - 1.0f;
 		t1 = (1.0f - p) * 1.386249f;
 		t2 = 12.0f + t1 * t1;
 	}
@@ -692,7 +694,7 @@ struct _PinkNoise {
 			}
 			sum += values[i];
 		}
-		return sum;
+		return sum / 2.f;
 	}
 };
 
@@ -700,7 +702,7 @@ struct _PinkNoise {
 struct _WhiteNoise {
 	float_4 _Out() {
 		float_4 white = random::normal();
-		return white;
+		return white / 2.f;
 	}
 };
 
@@ -787,10 +789,7 @@ struct _ADSR {
 	}
 
 	float_4 calcCoef(float_4 rate, float_4 targetRatio) {
-		float_4 result;
-		for (int i = 0; i < 4; i++) {
-			result[i] = (rate[i] <= 0.f) ? 0.f : exp(-log((1.f + targetRatio[i]) / targetRatio[i]) / rate[i]);
-		}
+		float_4 result = simd::ifelse(rate <= 0.f, 0.f, exp(-log((1.f + targetRatio) / targetRatio) / rate));
 		return result;
 	}
 

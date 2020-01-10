@@ -47,13 +47,13 @@ void Mixah::process(const ProcessArgs& args) {
 	int channels = max(max(inputs[_A_INPUT].getChannels(), inputs[_B_INPUT].getChannels()), 1);
 	for (int c = 0; c < channels; ++c) {
 		if (inputs[_A_INPUT].isConnected()) {
-			inA = inputs[_A_INPUT].getVoltage(c);
-			inB = inputs[_B_INPUT].getVoltage(c);
+			inA = inputs[_A_INPUT].getPolyVoltage(c);
+			inB = inputs[_B_INPUT].getPolyVoltage(c);
 			if (params[_PHASE_PARAM].getValue() == 1.0)
 				inB = -inB;
 			out = crossfade(inB, inA, mix);
 			if (inputs[_VCA_INPUT].isConnected())
-				out *= inputs[_VCA_INPUT].getVoltage(c) / 10;
+				out *= inputs[_VCA_INPUT].getPolyVoltage(c) / 10;
 		} else {
 			out = params[_KNOB_PARAM].getValue() * 10 - 5;
 		}

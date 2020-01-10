@@ -51,6 +51,7 @@ struct Shapah : Module {
 
 void Shapah::process(const ProcessArgs& args) {
 	int channels = inputs[_GATE_INPUT].getChannels();
+	int nc;
 
 	// Compute lambdas
 	if (cvDivider.process()) {
@@ -60,6 +61,7 @@ void Shapah::process(const ProcessArgs& args) {
 		float releaseParam = params[_RELEASE_PARAM].getValue();
 
 		for (int c = 0; c < channels; c += 4) {
+			nc = c / 4;
 			// CV
 			float_4 attack = attackParam;
 			float_4 decay = decayParam;
@@ -71,26 +73,27 @@ void Shapah::process(const ProcessArgs& args) {
 			sustain = simd::clamp(sustain, 0.f, 1.f);
 			release = simd::clamp(release, 0.f, 1.f);
 
-			attackLambda[c / 4] = simd::pow(LAMBDA_BASE, -attack) / MIN_TIME;
-			decayLambda[c / 4] = simd::pow(LAMBDA_BASE, -decay) / MIN_TIME;
-			releaseLambda[c / 4] = simd::pow(LAMBDA_BASE, -release) / MIN_TIME;
-			this->sustain[c / 4] = sustain;
+			attackLambda[nc] = simd::pow(LAMBDA_BASE, -attack) / MIN_TIME;
+			decayLambda[nc] = simd::pow(LAMBDA_BASE, -decay) / MIN_TIME;
+			releaseLambda[nc] = simd::pow(LAMBDA_BASE, -release) / MIN_TIME;
+			this->sustain[nc] = sustain;
 		}
 	}
 
 	float_4 gate[4];
 
 	for (int c = 0; c < channels; c += 4) {
-		gate[c / 4] = inputs[_GATE_INPUT].getVoltageSimd<float_4>(c) >= 1.f;
-		float_4 triggered = trigger[c / 4].process(inputs[_RTRG_INPUT].getPolyVoltageSimd<float_4>(c));
-		attacking[c / 4] = simd::ifelse(triggered, float_4::mask(), attacking[c / 4]);
+		nc = c / 4;
+		gate[nc] = inputs[_GATE_INPUT].getVoltageSimd<float_4>(c) >= 1.f;
+		float_4 triggered = trigger[nc].process(inputs[_RTRG_INPUT].getPolyVoltageSimd<float_4>(c));
+		attacking[nc] = simd::ifelse(triggered, float_4::mask(), attacking[nc]);
 		const float attackTarget = 1.2f;
-		float_4 target = simd::ifelse(gate[c / 4], simd::ifelse(attacking[c / 4], attackTarget, sustain[c / 4]), 0.f);
-		float_4 lambda = simd::ifelse(gate[c / 4], simd::ifelse(attacking[c / 4], attackLambda[c / 4], decayLambda[c / 4]), releaseLambda[c / 4]);
-		env[c / 4] += (target - env[c / 4]) * lambda * args.sampleTime;
-		attacking[c / 4] = simd::ifelse(env[c / 4] >= 1.f, float_4::zero(), attacking[c / 4]);
-		attacking[c / 4] = simd::ifelse(gate[c / 4], attacking[c / 4], float_4::mask());
-		outputs[_ADSR_OUTPUT].setVoltageSimd(10.f * env[c / 4], c);
+		float_4 target = simd::ifelse(gate[nc], simd::ifelse(attacking[nc], attackTarget, sustain[nc]), 0.f);
+		float_4 lambda = simd::ifelse(gate[nc], simd::ifelse(attacking[nc], attackLambda[nc], decayLambda[nc]), releaseLambda[nc]);
+		env[nc] += (target - env[nc]) * lambda * args.sampleTime;
+		attacking[nc] = simd::ifelse(env[nc] >= 1.f, float_4::zero(), attacking[nc]);
+		attacking[nc] = simd::ifelse(gate[nc], attacking[nc], float_4::mask());
+		outputs[_ADSR_OUTPUT].setVoltageSimd(10.f * env[nc], c);
 	}
 	outputs[_ADSR_OUTPUT].setChannels(channels);
 }

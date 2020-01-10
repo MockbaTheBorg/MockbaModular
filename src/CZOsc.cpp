@@ -34,8 +34,6 @@ struct _CZOsc : _MMOsc {
 		case 7:		// Reso3
 			v = osc.Reso3(phase, shape);
 			break;
-		default:
-			v = 0.f;
 		}
 		return v;
 	}
