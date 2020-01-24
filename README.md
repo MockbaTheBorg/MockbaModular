@@ -99,6 +99,11 @@ Just add or modify the item called "Background" with the path to the background 
   "IPAddress": "192.168.1.255"
 }
 ```
+The default background color can also be set by right clicking on the Mockba Modular blank.
+
+## Other Modules
+Please make sure also to check my commercial modules. They sound great, and your collaboration helps me keep the work on them.<br>
+Details here: https://github.com/MockbaTheBorg/VCVProducts
 
 ## Building
 Just follow the VCV recommendations to build plugins.<br>
