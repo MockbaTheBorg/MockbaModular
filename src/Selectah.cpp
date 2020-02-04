@@ -3,6 +3,30 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
+struct _InputSelect : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "A";
+			break;
+		case 1:
+			result = "B";
+			break;
+		case 2:
+			result = "C";
+			break;
+		case 3:
+			result = "D";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
 struct Selectah : Module {
 	enum ParamIds {
 		_SELECT_PARAM,
@@ -26,7 +50,7 @@ struct Selectah : Module {
 
 	Selectah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_SELECT_PARAM, 0.f, 3.f, 0.f, "A B C D");
+		configParam<_InputSelect>(_SELECT_PARAM, 0.f, 3.f, 0.f, "Input");
 	}
 
 	void process(const ProcessArgs& args) override;

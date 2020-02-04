@@ -65,8 +65,8 @@ struct CZOsc : Module {
 
 	CZOsc() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_WAVE_PARAM, 0, 7, 0, "");
-		configParam(_LFO_PARAM, 0, 1, 0, "OFF ON");
+		configParam<_CZWaveNames>(_WAVE_PARAM, 0, 7, 0, "");
+		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
 		configParam(_SHAPE_PARAM, 0.f, 1.f, 0.f, "Shape");

@@ -3,6 +3,24 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
+struct _BPhase : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Normal";
+			break;
+		case 1:
+			result = "Inverted";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
 struct Mixah : Module {
 	enum ParamIds {
 		_KNOB_PARAM,
@@ -27,7 +45,7 @@ struct Mixah : Module {
 	Mixah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.5f, "");
-		configParam(_PHASE_PARAM, 0.f, 1.f, 0.f, "B Phase reverse");
+		configParam<_BPhase>(_PHASE_PARAM, 0.f, 1.f, 0.f, "B Phase");
 	}
 
 	void process(const ProcessArgs& args) override;

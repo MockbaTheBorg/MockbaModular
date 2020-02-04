@@ -5,7 +5,7 @@
 
 struct Filtah : Module {
 	enum ParamIds {
-		_SL1_PARAM,		// Type: LP, BP, HP
+		_SL1_PARAM,		// Type: LP, HP, BP
 		_SL2_PARAM,		// Cutoff
 		_SL3_PARAM,		// Resonance
 		_SL5_PARAM,		// Output
@@ -29,7 +29,7 @@ struct Filtah : Module {
 
 	Filtah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_SL1_PARAM, 0, 2, 0, "LP BP HP");
+		configParam<_FilterMode>(_SL1_PARAM, 0, 2, 0, "");
 		configParam(_SL2_PARAM, 0, 100, 100, "%");
 		configParam(_SL3_PARAM, 0, 0.85, 0, "");
 		configParam(_SL5_PARAM, -25, 25, 0, "dB");

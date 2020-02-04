@@ -60,6 +60,7 @@ std::string loadBack(int bgSel);
 float randomFloat();
 float detune();
 float_4 detune4();
+Vec ISPos(float x, float y);
 
 // simd mixing functions
 float_4 mix2(float_4 s1, float_4 m1, float_4 s2, float_4 m2);
@@ -410,6 +411,10 @@ struct _Filter {
 
 	float_4 outValue = 0;
 
+	void init() {
+		outgain = 1.f;
+	}
+
 	void setType(float_4 ftypeV) {
 		ftype = ftypeV;
 	}
@@ -465,10 +470,10 @@ struct _Filter {
 			out = y4;
 		}
 		if (ftype[0] == 1) {
-			out = 6 * (y3 - y4);
+			out = in - y4;
 		}
 		if (ftype[0] == 2) {
-			out = in - y4;
+			out = 6 * (y3 - y4);
 		}
 
 		out *= outgain;
@@ -534,8 +539,10 @@ struct _ModelVFilter {
 
 		if (type == 0.f) {
 			sample = stage[3];
-		} else {
+		} else if (type == 1.f) {
 			sample -= stage[3];
+		} else {
+			sample = 2 * (stage[2] - stage[3]);
 		}
 
 		return sample;
@@ -797,6 +804,10 @@ struct _ADSR {
 		state = stateV;
 	}
 
+	int32_4 getState() {
+		return state;
+	}
+
 	void setAttackRate(float_4 rate) {
 		attackRate = rate;
 		attackCoef = calcCoef(rate, targetRatioA);
@@ -843,5 +854,202 @@ struct _ADSR {
 	}
 };
 
+struct _CZWaveNames : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Saw";
+			break;
+		case 1:
+			result = "Square";
+			break;
+		case 2:
+			result = "Pulse";
+			break;
+		case 3:
+			result = "DblSine";
+			break;
+		case 4:
+			result = "SawPulse";
+			break;
+		case 5:
+			result = "Reso1";
+			break;
+		case 6:
+			result = "Reso2";
+			break;
+		case 7:
+			result = "Reso3";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _MaugWaveNames : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Triangle";
+			break;
+		case 1:
+			result = "Shark";
+			break;
+		case 2:
+			result = "Saw";
+			break;
+		case 3:
+			result = "Square 48%";
+			break;
+		case 4:
+			result = "Square 29%";
+			break;
+		case 5:
+			result = "Square 17%";
+			break;
+		case 6:
+			result = "InvSaw";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _MaugOsc3WaveNames : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Triangle";
+			break;
+		case 1:
+			result = "InvSaw";
+			break;
+		case 2:
+			result = "Saw";
+			break;
+		case 3:
+			result = "Square 48%";
+			break;
+		case 4:
+			result = "Square 29%";
+			break;
+		case 5:
+			result = "Square 17%";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _ProtonWaveNames : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Sine";
+			break;
+		case 1:
+			result = "Triangle";
+			break;
+		case 2:
+			result = "Saw";
+			break;
+		case 3:
+			result = "InvSaw";
+			break;
+		case 4:
+			result = "Square";
+			break;
+		case 5:
+			result = "PWM";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _OscRange : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case -3:
+			result = "Low";
+			break;
+		case -2:
+			result = "32'";
+			break;
+		case -1:
+			result = "16'";
+			break;
+		case 0:
+			result = "8'";
+			break;
+		case 1:
+			result = "4'";
+			break;
+		case 2:
+			result = "2'";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _OnOff : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Off";
+			break;
+		case 1:
+			result = "On";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _FilterMode : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Low Pass";
+			break;
+		case 1:
+			result = "High Pass";
+			break;
+		case 2:
+			result = "Band Pass";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
 
 #endif

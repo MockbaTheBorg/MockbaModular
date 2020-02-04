@@ -3,6 +3,24 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
+struct _NotMode : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Digital";
+			break;
+		case 1:
+			result = "Analog";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
 struct DualNOT : Module {
 	enum ParamIds {
 		_DA_PARAM,
@@ -26,7 +44,7 @@ struct DualNOT : Module {
 
 	DualNOT() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_DA_PARAM, 0, 1, 0, "Digital/Analog");
+		configParam<_NotMode>(_DA_PARAM, 0, 1, 0, "");
 	}
 
 	void process(const ProcessArgs& args) override;

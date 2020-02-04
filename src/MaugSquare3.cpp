@@ -26,7 +26,7 @@ struct MaugSquare3 : Module {
 
 	MaugSquare3() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_LFO_PARAM, 0, 1, 0, "OFF ON");
+		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
 	}

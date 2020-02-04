@@ -74,6 +74,10 @@ float_4 detune4() {
 	return f;
 }
 
+Vec ISPos(float x, float y) {
+	return mm2px(Vec(x, 128.5f - y));
+}
+
 float_4 mix2(float_4 s1, float_4 m1, float_4 s2, float_4 m2) {
 	return((s1 * m1 + s2 * m2) / simd::fmax(1, m1 + m2));
 }
