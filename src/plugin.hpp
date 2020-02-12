@@ -91,5 +91,6 @@ extern Model* modelDualAND;
 extern Model* modelDualNAND;
 extern Model* modelDualXOR;
 extern Model* modelDualXNOR;
+extern Model* modelPSelectah;
 extern Model* modelUDPClockSlave;
 extern Model* modelUDPClockMaster;

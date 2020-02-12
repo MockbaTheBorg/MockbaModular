@@ -88,7 +88,7 @@ void BlankWidget::appendContextMenu(Menu* menu) {
 
 	BackMenuItem* menuItem = new BackMenuItem;
 	menuItem->text = "Background theme";
-	menuItem->rightText = string::f("%d", this->bgSel) + " " + RIGHT_ARROW;
+	menuItem->rightText = RIGHT_ARROW;
 	menuItem->moduleWidget = this;
 	menu->addChild(menuItem);
 }

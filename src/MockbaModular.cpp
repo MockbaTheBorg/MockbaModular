@@ -79,17 +79,17 @@ Vec ISPos(float x, float y) {
 }
 
 float_4 mix2(float_4 s1, float_4 m1, float_4 s2, float_4 m2) {
-	return((s1 * m1 + s2 * m2) / simd::fmax(1, m1 + m2));
+	return(s1 * m1 + s2 * m2);
 }
 
 float_4 mix3(float_4 s1, float_4 m1, float_4 s2, float_4 m2, float_4 s3, float_4 m3) {
-	return((s1 * m1 + s2 * m2 + s3 * m3) / simd::fmax(1, m1 + m2 + m3));
+	return(s1 * m1 + s2 * m2 + s3 * m3);
 }
 
 float_4 mix4(float_4 s1, float_4 m1, float_4 s2, float_4 m2, float_4 s3, float_4 m3, float_4 s4, float_4 m4) {
-	return((s1 * m1 + s2 * m2 + s3 * m3 + s4 * m4) / simd::fmax(1, m1 + m2 + m3 + m4));
+	return(s1 * m1 + s2 * m2 + s3 * m3 + s4 * m4);
 }
 
 float_4 mix5(float_4 s1, float_4 m1, float_4 s2, float_4 m2, float_4 s3, float_4 m3, float_4 s4, float_4 m4, float_4 s5, float_4 m5) {
-	return((s1 * m1 + s2 * m2 + s3 * m3 + s4 * m4 + s5 * m5) / simd::fmax(1, m1 + m2 + m3 + m4 + m5));
+	return(s1 * m1 + s2 * m2 + s3 * m3 + s4 * m4 + s5 * m5);
 }

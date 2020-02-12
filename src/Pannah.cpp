@@ -22,6 +22,8 @@ struct Pannah : Module {
 		NUM_LIGHTS
 	};
 
+	bool constant = false;
+
 	Pannah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.5f, "pan");
@@ -32,19 +34,25 @@ struct Pannah : Module {
 
 void Pannah::process(const ProcessArgs& args) {
 	float pan = params[_KNOB_PARAM].getValue();
+	if (inputs[_MOD_INPUT].isConnected())
+		pan = clamp(inputs[_MOD_INPUT].getVoltage(), -5.f, 5.f) / 10.f + .5f;
+	float position = pan + pan - 1;
+	float angle = ((position + 1) / 2) * M_PI_2;
+	float panL, panR;
+	if (constant) {
+		panL = mmCos(angle);
+		panR = mmSin(angle);
+	} else {
+		panL = 1.f - pan;
+		panR = pan;
+	}
 	float in;
-	float outl = 0.f;
-	float outr = 0.f;
 	// Iterate over each channel
 	int channels = max(inputs[_VOLTAGE_INPUT].getChannels(), 1);
 	for (int c = 0; c < channels; ++c) {
 		in = inputs[_VOLTAGE_INPUT].getVoltage(c);
-		if (inputs[_MOD_INPUT].isConnected())
-			pan = clamp(inputs[_MOD_INPUT].getVoltage(), -5.f, 5.f) / 10.f + .5f;
-		outl = in * (1.f - pan);
-		outr = -in * pan;
-		outputs[_VOLTAGEL_OUTPUT].setVoltage(outl, c);
-		outputs[_VOLTAGER_OUTPUT].setVoltage(outr, c);
+		outputs[_VOLTAGEL_OUTPUT].setVoltage(in * panL, c);
+		outputs[_VOLTAGER_OUTPUT].setVoltage(in * panR, c);
 	}
 	outputs[_VOLTAGEL_OUTPUT].setChannels(channels);
 	outputs[_VOLTAGER_OUTPUT].setChannels(channels);
@@ -72,6 +80,24 @@ struct PannahWidget : ModuleWidget {
 		// Outputs
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, Pannah::_VOLTAGEL_OUTPUT));
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, Pannah::_VOLTAGER_OUTPUT));
+	}
+
+	struct ConstantPower : MenuItem {
+		Pannah* module;
+		void onAction(const event::Action& e) override {
+			module->constant ^= 0x1;
+		}
+	};
+
+	void appendContextMenu(Menu* menu) override {
+		Pannah* module = dynamic_cast<Pannah*>(this->module);
+		assert(module);
+
+		menu->addChild(new MenuLabel());
+
+		ConstantPower* htItem = createMenuItem<ConstantPower>("Constant Power", CHECKMARK(module->constant != 0));
+		htItem->module = module;
+		menu->addChild(htItem);
 	}
 };
 

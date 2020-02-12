@@ -46,6 +46,7 @@ void init(Plugin* p) {
 	p->addModel(modelDualNAND);
 	p->addModel(modelDualXOR);
 	p->addModel(modelDualXNOR);
+	p->addModel(modelPSelectah);
 	p->addModel(modelUDPClockSlave);
 	p->addModel(modelUDPClockMaster);
 }

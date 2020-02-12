@@ -6,7 +6,7 @@
 using namespace simd;
 
 #define DETUNE_RNG 0.002f	// Osc spread range
-#define EXP_FACTOR -3.f		// Bulge factor for the Exponential Curve
+#define EXP_FACTOR -4.f		// Bulge factor for the Exponential Curve
 
 #ifdef _WIN32
 	#ifndef ARCH_WIN
@@ -74,10 +74,9 @@ T expCurve(T x, float f) {
 	return (3 + x * ((-13 - f) + 5 * x)) / (3 + (2 + f) * x);
 }
 
-// Cosine Approximation
+// Cosine/Sine Approximation
 template <typename T>
 inline T mmCos(T x) noexcept {
-	//	constexpr T tp = 1. / (2. * M_PI);
 	x *= 0.159154943092;
 	x -= T(.25) + simd::floor(x + T(.25));
 	x *= T(16.) * (simd::fabs(x) - T(.5));
@@ -85,6 +84,28 @@ inline T mmCos(T x) noexcept {
 	x += T(.225) * x * (simd::fabs(x) - T(1.));
 #endif
 	return x;
+}
+template <typename T>
+inline T mmSin(T x) noexcept {
+	x -= M_PI_2;
+	x *= 0.159154943092;
+	x -= T(.25) + simd::floor(x + T(.25));
+	x *= T(16.) * (simd::fabs(x) - T(.5));
+#if EXTRA_PRECISION
+	x += T(.225) * x * (simd::fabs(x) - T(1.));
+#endif
+	return x;
+}
+
+// Linear to Log pot
+// 2.0 = 0.25 at half turn
+// 3.0 = 0.2 at half turn
+// 6.0 = 0.125 at half turn
+// 8.0 = 0.1 at half turn
+#define LOGPOT_PARAM 6.f
+template <typename T>
+inline T logPot(T lin) {
+	return(lin / (1 + (1 - lin) * LOGPOT_PARAM));
 }
 
 // Minimal MM Oscillator (No Antialias)
@@ -122,9 +143,9 @@ struct _MMOsc {
 		outValue = oscStep(phase, shape, wave);
 	}
 
-	// Override this to define the oscillator waveform - (co)sinewave by default
+	// Override this to define the oscillator waveform - sinewave by default
 	virtual float_4 oscStep(float_4 phase, float_4 shape, int wave) {
-		return mmCos(phase * M_2PI);
+		return mmSin(phase * M_2PI);
 	}
 
 	float_4 _Out() {
@@ -258,8 +279,7 @@ struct _MaugOsc {
 		sqrValue = sqrFilter.highpass() * 0.95f;
 
 		// InvSaw
-		invsawValue = invsaw(phase);
-		invsawValue += invsawMinBlep.process();
+		invsawValue = -sawValue;
 	}
 
 	float_4 tri(float_4 phase) {
@@ -306,15 +326,8 @@ struct _MaugOsc {
 		return sqrValue;
 	}
 
-	float_4 invsaw(float_4 phase) {
-		float_4 v;
-		float_4 x = phase + 0.5f;
-		x -= simd::trunc(x);
-		v = -expCurve(x, EXP_FACTOR);
-		return -v;
-	}
 	float_4 invsaw() {
-		return sawValue;
+		return invsawValue;
 	}
 
 	float_4 _Out() {
@@ -476,9 +489,7 @@ struct _Filter {
 			out = 6 * (y3 - y4);
 		}
 
-		out *= outgain;
-
-		outValue = simd::clamp(out, -5.f, +5.f);
+		outValue = out * outgain;
 	}
 
 	float_4 _Out() {
@@ -520,8 +531,8 @@ struct _ModelVFilter {
 		setResonance(0.f);
 	}
 
-	virtual float_4 process(float_4 sample) {
-		float_4 x = sample - resonance * stage[3];
+	virtual float_4 process(float_4 input) {
+		float_4 x = input - resonance * stage[3];
 
 		// Four cascaded one-pole filters (bilinear transform)
 		stage[0] = x * p + delay[0] * p - k * stage[0];
@@ -538,14 +549,14 @@ struct _ModelVFilter {
 		delay[3] = stage[2];
 
 		if (type == 0.f) {
-			sample = stage[3];
+			input = stage[3];
 		} else if (type == 1.f) {
-			sample -= stage[3];
+			input -= stage[3];
 		} else {
-			sample = 2 * (stage[2] - stage[3]);
+			input = 3. * (stage[2] - stage[3]);
 		}
 
-		return sample;
+		return input;
 	}
 
 	virtual void setType(float t) {
@@ -560,9 +571,69 @@ struct _ModelVFilter {
 		cutoff = c;
 
 		p = cutoff * (1.8f - 0.8f * cutoff);
-		k = 2.0f * simd::sin(cutoff * M_PI_2) - 1.0f;
+		k = 2.0f * mmSin(cutoff * M_PI_2) - 1.0f;
 		t1 = (1.0f - p) * 1.386249f;
-		t2 = 12.0f + t1 * t1;
+		t2 = 12.0f + t1 * t1 * t1;
+	}
+};
+
+struct _MaugLP_A {
+	float type;
+	float_4 cutoff;
+	float resonance;
+	float_4 output = { 0, 0, 0, 0 };
+
+	float_4 in1 = { 0, 0, 0, 0 };
+	float_4 in2 = { 0, 0, 0, 0 };
+	float_4 in3 = { 0, 0, 0, 0 };
+	float_4 in4 = { 0, 0, 0, 0 };
+
+	float_4 out1 = { 0, 0, 0, 0 };
+	float_4 out2 = { 0, 0, 0, 0 };
+	float_4 out3 = { 0, 0, 0, 0 };
+	float_4 out4 = { 0, 0, 0, 0 };
+
+	void init() {
+		type = 0.f;
+		resonance = 0.f;
+		cutoff = 1.f;
+		output = 0;
+	}
+
+	void setType(float t) {
+		type = t;
+	}
+
+	void setCutoff(float_4 c) {
+		cutoff = c * .99f + .01f;
+	}
+
+	void setResonance(float r) {
+		resonance = r * 4.f;
+	}
+
+	float_4 process(float_4 input) {
+		float_4 f = cutoff * 1.16;
+		float_4 fb = resonance * (1.0 - 0.15 * f * f);
+		input -= out4 * fb;
+		input *= 0.35013 * (f * f) * (f * f);
+		out1 = input + 0.3 * in1 + (1 - f) * out1; // Pole 1
+		in1 = input;
+		out2 = out1 + 0.3 * in2 + (1 - f) * out2;  // Pole 2
+		in2 = out1;
+		out3 = out2 + 0.3 * in3 + (1 - f) * out3;  // Pole 3
+		in3 = out2;
+		out4 = out3 + 0.3 * in4 + (1 - f) * out4;  // Pole 4
+		in4 = out3;
+
+		if (type == 0.f) {
+			input = out4;
+		} else if (type == 1.f) {
+			input -= out4;
+		} else {
+			input = 3.f * (out3 - out4);
+		}
+		return input;
 	}
 };
 
@@ -854,6 +925,41 @@ struct _ADSR {
 	}
 };
 
+// Custom buttons/tooltips
+
+template<int NUM_MODES>
+struct MMButtonQuantity : ParamQuantity {
+
+	std::string modes[NUM_MODES];
+
+	virtual int getModeEnumeration(void) { return 0; }
+	virtual void setMode(int mode) {}
+
+	float getDisplayValue() override {
+		if (!module)
+			return Quantity::getDisplayValue();
+		return getModeEnumeration();
+	}
+
+	std::string getDisplayValueString() override {
+		if (!module)
+			return Quantity::getDisplayValueString();
+		int mode = getDisplayValue();
+		return modes[mode];
+	}
+
+	void setDisplayValueString(std::string s) override {
+		if (!module)
+			return;
+		for (int i = 0; i < NUM_MODES; i++) {
+			if (s == modes[i] || s == std::to_string(i + 1)) {
+				setMode(i);
+			}
+		}
+
+	}
+};
+
 struct _CZWaveNames : ParamQuantity {
 	std::string getDisplayValueString() override {
 		int v = getValue();
@@ -1023,6 +1129,78 @@ struct _OnOff : ParamQuantity {
 			break;
 		case 1:
 			result = "On";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _NoiseType : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Pink";
+			break;
+		case 1:
+			result = "White";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _ModMixLeft : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Osc 3";
+			break;
+		case 1:
+			result = "Filter";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _ModMixRight : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Noise";
+			break;
+		case 1:
+			result = "LFO";
+			break;
+		default:
+			result = "???";
+		}
+		return result;
+	}
+};
+
+struct _LfoWave : ParamQuantity {
+	std::string getDisplayValueString() override {
+		int v = getValue();
+		std::string result;
+		switch (v) {
+		case 0:
+			result = "Triangle";
+			break;
+		case 1:
+			result = "Square";
 			break;
 		default:
 			result = "???";
