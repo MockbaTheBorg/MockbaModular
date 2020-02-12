@@ -34,22 +34,30 @@ struct Pannah : Module {
 
 void Pannah::process(const ProcessArgs& args) {
 	float pan = params[_KNOB_PARAM].getValue();
-	if (inputs[_MOD_INPUT].isConnected())
-		pan = clamp(inputs[_MOD_INPUT].getVoltage(), -5.f, 5.f) / 10.f + .5f;
-	float position = pan + pan - 1;
-	float angle = ((position + 1) / 2) * M_PI_2;
-	float panL, panR;
-	if (constant) {
-		panL = mmCos(angle);
-		panR = mmSin(angle);
-	} else {
-		panL = 1.f - pan;
-		panR = pan;
+	bool polyPan = false;
+	if (inputs[_MOD_INPUT].isConnected()) {
+		if (inputs[_MOD_INPUT].getChannels() > 1) {
+			polyPan = true;
+		} else {
+			pan = clamp(inputs[_MOD_INPUT].getVoltage(), -5.f, 5.f) / 10.f + .5f;
+		}
 	}
-	float in;
+	float in, position, angle;
+	float panL, panR;
 	// Iterate over each channel
 	int channels = max(inputs[_VOLTAGE_INPUT].getChannels(), 1);
 	for (int c = 0; c < channels; ++c) {
+		if(polyPan)
+			pan = clamp(inputs[_MOD_INPUT].getVoltage(c), -5.f, 5.f) / 10.f + .5f;
+		position = pan + pan - 1;
+		angle = ((position + 1) / 2) * M_PI_2;
+		if (constant) {
+			panL = mmCos(angle);
+			panR = mmSin(angle);
+		} else {
+			panL = 1.f - pan;
+			panR = pan;
+		}
 		in = inputs[_VOLTAGE_INPUT].getVoltage(c);
 		outputs[_VOLTAGEL_OUTPUT].setVoltage(in * panL, c);
 		outputs[_VOLTAGER_OUTPUT].setVoltage(in * panR, c);
