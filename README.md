@@ -1,5 +1,5 @@
 # Mockba Modular
-Mockba's modules for VCV Rack
+Mockba's modules for VCV Rack: https://vcvrack.com/plugins#Mockba
 
 This is a small collection of modules I have created out of pure necessity.<br>
 I believe these modules might prove useful to others. Please feel free to use them.
@@ -127,5 +127,8 @@ THESE MODULES ARE ALL WORK IN PROGRESS, EXPECT MISBEHAVIORS!<br>
 Usage of these modules might cause issues like electricity spikes, cpu core meltdowns or planetary energy disruptions, be advised.<br>
 Help, suggestions and of course donations are much welcome.<br>
 
-Make sure to check also my commercial modules:
-MM_Oscah - Special Vintage Oscillators: https://github.com/MockbaTheBorg/VCVProducts/tree/master/MM_Oscah
+Make sure to check also my commercial modules:<br>
+MM_Oscah - Special Vintage Oscillators:<br> https://github.com/MockbaTheBorg/VCVProducts/tree/master/MM_Oscah<br>
+MM_ModelV - Moog Inspired Synthesizer:<br> https://github.com/MockbaTheBorg/VCVProducts/tree/master/MM_ModelV<br>
+MM_ModelX - Crossover between a Moog and a Casio:<br> https://github.com/MockbaTheBorg/VCVProducts/tree/master/MM_ModelX<br>
+MM_Proton - A different approach to the "Model" series:<br> https://github.com/MockbaTheBorg/VCVProducts/tree/master/MM_Proton<br>
