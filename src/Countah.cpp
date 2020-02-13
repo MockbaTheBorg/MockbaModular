@@ -41,6 +41,7 @@ struct Countah : Module {
 
 void Countah::onAdd() {
 	clock_was0 = true;
+	value = 0;
 	for (int i = 0; i < NUM_OUTPUTS; i++) {
 		outputs[i].setVoltage(0.0);
 	}
@@ -65,7 +66,7 @@ void Countah::process(const ProcessArgs& args) {
 	if (inputs[_CLOCK_INPUT].getVoltage() > 0.0) {
 		if (clock_was0) {
 			clock_was0 = false;
-			--value;
+			++value;
 
 			outputs[_BY2_OUTPUT].setVoltage(value & 1 ? 10.0 : 0.0);
 			outputs[_BY4_OUTPUT].setVoltage(value & 2 ? 10.0 : 0.0);

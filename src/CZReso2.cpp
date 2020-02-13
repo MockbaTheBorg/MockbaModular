@@ -33,6 +33,9 @@ struct CZReso2 : Module {
 	};
 
 	_Reso2 osc[4];
+	_DCBlock dcb[4];
+
+	bool dcBlock = false;
 
 	CZReso2() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -46,6 +49,22 @@ struct CZReso2 : Module {
 	void onReset() override;
 
 	void process(const ProcessArgs& args) override;
+
+	json_t* dataToJson() override {
+		json_t* rootJ = json_object();
+
+		// Constant Power
+		json_object_set_new(rootJ, "dcBlock", json_integer(dcBlock));
+		return rootJ;
+	}
+
+
+	void dataFromJson(json_t* rootJ) override {
+		// Constant Power
+		json_t* dcBlockJ = json_object_get(rootJ, "dcBlock");
+		if (dcBlockJ)
+			dcBlock = json_integer_value(dcBlockJ);
+	}
 };
 
 void CZReso2::onAdd() {
@@ -78,7 +97,15 @@ void CZReso2::process(const ProcessArgs& args) {
 		oscillator->setShape(shape);
 		// Process and output
 		oscillator->process(args.sampleTime);
-		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out(), c);
+		float_4 out;
+		if (dcBlock) {
+			// DC Blocker
+			auto* dcblock = &dcb[c / 4];
+			out = dcblock->process(oscillator->_Out());
+		} else {
+			out = oscillator->_Out();
+		}
+		outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * out, c);
 	}
 	outputs[_WAVE_OUTPUT].setChannels(channels);
 }
@@ -106,6 +133,24 @@ struct CZReso2Widget : ModuleWidget {
 
 		// Outputs
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, CZReso2::_WAVE_OUTPUT));
+	}
+
+	struct DCBlock : MenuItem {
+		CZReso2* module;
+		void onAction(const event::Action& e) override {
+			module->dcBlock ^= 0x1;
+		}
+	};
+
+	void appendContextMenu(Menu* menu) override {
+		CZReso2* module = dynamic_cast<CZReso2*>(this->module);
+		assert(module);
+
+		menu->addChild(new MenuLabel());
+
+		DCBlock* htItem = createMenuItem<DCBlock>("DC Block", CHECKMARK(module->dcBlock != 0));
+		htItem->module = module;
+		menu->addChild(htItem);
 	}
 };
 

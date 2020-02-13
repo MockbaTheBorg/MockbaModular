@@ -497,6 +497,16 @@ struct _Filter {
 	}
 };
 
+struct _DCBlock {
+	float_4 xm1 = 0.f;
+	float_4 ym1 = 0.f;
+
+	float_4 process(float_4 x) {
+		float_4 y = x - xm1 + 0.995 * ym1; xm1 = x; ym1 = y;
+		return y;
+	}
+};
+
 struct _Glider {
 	float_4 freq = 0.f;
 

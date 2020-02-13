@@ -23,16 +23,36 @@ struct FeidahS : Module {
 		NUM_LIGHTS
 	};
 
+	bool exponential = false;
+
 	FeidahS() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam(_KNOB_PARAM, 0.f, 1.f, 0.f, "");
+		configParam(_KNOB_PARAM, 0.f, 1.f, 1.f, "");
 	}
 
 	void process(const ProcessArgs& args) override;
+
+	json_t* dataToJson() override {
+		json_t* rootJ = json_object();
+
+		// Constant Power
+		json_object_set_new(rootJ, "exponential", json_integer(exponential));
+		return rootJ;
+	}
+
+
+	void dataFromJson(json_t* rootJ) override {
+		// Constant Power
+		json_t* exponentialJ = json_object_get(rootJ, "exponential");
+		if (exponentialJ)
+			exponential = json_integer_value(exponentialJ);
+	}
 };
 
 void FeidahS::process(const ProcessArgs& args) {
 	float atten = params[_KNOB_PARAM].getValue();
+	if (exponential)
+		atten = logPot(atten);
 	float outL;
 	float outR;
 	// Iterate over each channel
@@ -83,6 +103,24 @@ struct FeidahSWidget : ModuleWidget {
 		// Outputs
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, FeidahS::_LEFT_OUTPUT));
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, FeidahS::_RIGHT_OUTPUT));
+	}
+
+	struct Exponential : MenuItem {
+		FeidahS* module;
+		void onAction(const event::Action& e) override {
+			module->exponential ^= 0x1;
+		}
+	};
+
+	void appendContextMenu(Menu* menu) override {
+		FeidahS* module = dynamic_cast<FeidahS*>(this->module);
+		assert(module);
+
+		menu->addChild(new MenuLabel());
+
+		Exponential* htItem = createMenuItem<Exponential>("Exponential", CHECKMARK(module->exponential != 0));
+		htItem->module = module;
+		menu->addChild(htItem);
 	}
 };
 

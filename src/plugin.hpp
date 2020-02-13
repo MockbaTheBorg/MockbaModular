@@ -65,6 +65,7 @@ extern Model* modelSelectah;
 extern Model* modelShapah;
 extern Model* modelHoldah;
 extern Model* modelPannah;
+extern Model* modelReVoltah;
 extern Model* modelCZSaw;
 extern Model* modelCZSquare;
 extern Model* modelCZPulse;

@@ -58,7 +58,6 @@ void Mixah::process(const ProcessArgs& args) {
 	} else {
 		mix = params[_KNOB_PARAM].getValue();
 	}
-	mix = 1.f - mix;
 	float out;
 	float inA, inB;
 	// Iterate over each channel
@@ -69,7 +68,7 @@ void Mixah::process(const ProcessArgs& args) {
 			inB = inputs[_B_INPUT].getPolyVoltage(c);
 			if (params[_PHASE_PARAM].getValue() == 1.0)
 				inB = -inB;
-			out = crossfade(inB, inA, mix);
+			out = crossfade(inA, inB, mix);
 			if (inputs[_VCA_INPUT].isConnected())
 				out *= inputs[_VCA_INPUT].getPolyVoltage(c) / 10;
 		} else {

@@ -40,7 +40,11 @@ void Holdah::process(const ProcessArgs& args) {
 	if (inputs[_TRIGGER1_INPUT].getVoltage() > 0.0) {
 		if (trg1_was0) {
 			trg1_was0 = false;
-			last1 = inputs[_VOLTAGE1_INPUT].getVoltage();
+			if (inputs[_VOLTAGE1_INPUT].isConnected()) {
+				last1 = inputs[_VOLTAGE1_INPUT].getVoltage();
+			} else {
+				last1 = random::normal() * 2.5f;
+			}
 		}
 	} else {
 		trg1_was0 = true;
@@ -49,7 +53,11 @@ void Holdah::process(const ProcessArgs& args) {
 	if (inputs[_TRIGGER2_INPUT].getVoltage() > 0.0) {
 		if (trg2_was0) {
 			trg2_was0 = false;
-			last2 = inputs[_VOLTAGE2_INPUT].getVoltage();
+			if (inputs[_VOLTAGE2_INPUT].isConnected()) {
+				last2 = inputs[_VOLTAGE2_INPUT].getVoltage();
+			} else {
+				last2 = random::normal() * 2.5f;
+			}
 		}
 	} else {
 		trg2_was0 = true;

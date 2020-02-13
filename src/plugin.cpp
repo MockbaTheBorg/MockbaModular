@@ -20,6 +20,7 @@ void init(Plugin* p) {
 	p->addModel(modelShapah);
 	p->addModel(modelHoldah);
 	p->addModel(modelPannah);
+	p->addModel(modelReVoltah);
 	p->addModel(modelCZSaw);
 	p->addModel(modelCZSquare);
 	p->addModel(modelCZPulse);

@@ -63,8 +63,8 @@ void Selectah::process(const ProcessArgs& args) {
 	} else {
 		selection = int(params[_SELECT_PARAM].getValue());
 	}
+	int channels = max(inputs[selection + 1].getChannels(), 1);
 	// Iterate over each channel
-	int channels = max(max(max(max(inputs[_A_INPUT].getChannels(), inputs[_B_INPUT].getChannels()), inputs[_C_INPUT].getChannels()), inputs[_D_INPUT].getChannels()), 1);
 	for (int c = 0; c < channels; ++c) {
 		outputs[_SELECTED_OUTPUT].setVoltage(inputs[selection + 1].getVoltage(c), c);
 	}

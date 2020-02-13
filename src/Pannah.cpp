@@ -30,6 +30,22 @@ struct Pannah : Module {
 	}
 
 	void process(const ProcessArgs& args) override;
+
+	json_t* dataToJson() override {
+		json_t* rootJ = json_object();
+
+		// Constant Power
+		json_object_set_new(rootJ, "constantPower", json_integer(constant));
+		return rootJ;
+	}
+
+
+	void dataFromJson(json_t* rootJ) override {
+		// Constant Power
+		json_t* constantPowerJ = json_object_get(rootJ, "constantPower");
+		if (constantPowerJ)
+			constant = json_integer_value(constantPowerJ);
+	}
 };
 
 void Pannah::process(const ProcessArgs& args) {
