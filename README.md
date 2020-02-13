@@ -1,5 +1,5 @@
 # Mockba Modular
-Mockba's modules for VCV Rack
+Mockba's modules for VCV Rack: https://vcvrack.com/plugins#Mockba
 
 This is a small collection of modules I have created out of pure necessity.<br>
 I believe these modules might prove useful to others. Please feel free to use them.
