@@ -25,48 +25,46 @@ struct Filtah : Module {
 		NUM_LIGHTS
 	};
 
-	_Filter fil[4];
+	_Filter <float_4>fil[4];
 
 	Filtah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam<_FilterMode>(_SL1_PARAM, 0, 2, 0, "");
-		configParam(_SL2_PARAM, 0, 100, 100, "%");
-		configParam(_SL3_PARAM, 0, 0.85, 0, "");
-		configParam(_SL5_PARAM, -25, 25, 0, "dB");
+		configParam<_FilterMode>(_SL1_PARAM, 0.f, 2.f, 0.f, "");
+		configParam(_SL2_PARAM, 0.f, 100.f, 100.f, "%");
+		configParam(_SL3_PARAM, 0.f, 0.85f, 0.f, "");
+		configParam(_SL5_PARAM, -25.f, 25.f, 0.f, "dB");
 	}
 
 	void process(const ProcessArgs& args) override;
 };
 
 void Filtah::process(const ProcessArgs& args) {
-	float ftype = params[_SL1_PARAM].getValue();
-	float_4 sx = 16 + params[_SL2_PARAM].getValue() * 1.20103;
-	float_4 res = params[_SL3_PARAM].getValue();
-	float outgain = powf(10, params[_SL5_PARAM].getValue() / 20);
-
+	// Get parameters
+	int ftype = params[_SL1_PARAM].getValue();
+	float sx = 16.f + params[_SL2_PARAM].getValue() * 1.20103f;
+	float res = params[_SL3_PARAM].getValue();
+	float outgain = powf(10.f, params[_SL5_PARAM].getValue() / 20.f);
 	// Iterate over each channel
 	int channels = max(inputs[_SP0_INPUT].getChannels(), 1);
 	for (int c = 0; c < channels; c += 4) {
+		int nc = c / 4;
 		// Get the filter
-		auto* filter = &fil[c / 4];
+		auto* filter = &fil[nc];
 
+		float_4 sxV = sx;
 		if (inputs[_MODC_INPUT].isConnected())
-			sx *= inputs[_MODC_INPUT].getVoltageSimd<float_4>(c) / 10;
-		float_4 cutoff = floor(exp(sx * log(1.059)) * 8.17742);
-		if (inputs[_MODR_INPUT].isConnected())
-			res *= inputs[_MODR_INPUT].getVoltageSimd<float_4>(c) / 10;
-
-		float_4 ftypeV = ftype;
-		filter->setType(ftypeV);
-		float_4 cutoffV = cutoff;
-		filter->setCutoff(cutoffV);
+			sxV *= inputs[_MODC_INPUT].getVoltageSimd<float_4>(c) / 10.f;
+		float_4 cutoff = simd::floor(simd::exp(sxV * simd::log(1.059f)) * 8.17742f);
 		float_4 resV = res;
-		filter->setRes(resV);
-		float_4 outgainV = outgain;
-		filter->setGain(outgainV);
+		if (inputs[_MODR_INPUT].isConnected())
+			resV *= inputs[_MODR_INPUT].getVoltageSimd<float_4>(c) / 10.f;
 
-		float_4 spl0 = inputs[_SP0_INPUT].getVoltageSimd<float_4>(c);
-		filter->process(spl0, args.sampleRate);
+		filter->setType(ftype);
+		filter->setCutoff(cutoff);
+		filter->setRes(res);
+		filter->setGain(outgain);
+
+		filter->process(inputs[_SP0_INPUT].getVoltageSimd<float_4>(c), args.sampleRate);
 		outputs[_SP0_OUTPUT].setVoltageSimd(filter->_Out(), c);
 	}
 	outputs[_SP0_OUTPUT].setChannels(channels);

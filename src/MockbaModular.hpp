@@ -37,19 +37,19 @@ using namespace simd;
 #endif
 
 #ifndef M_PI
-	#define M_PI	3.14159265358979323846
+	#define M_PI	3.14159265358979323846f
 #endif
 #ifndef M_PI_2
-	#define M_PI_2	1.57079632679489661923
+	#define M_PI_2	1.57079632679489661923f
 #endif
 #ifndef M_2_PI
-	#define M_2_PI	0.63661977236758134307
+	#define M_2_PI	0.63661977236758134307f
 #endif
 #ifndef M_2PI
-	#define M_2PI	6.28318530717958647692
+	#define M_2PI	6.28318530717958647692f
 #endif
 #ifndef M_E
-	#define M_E		2.71828182845904523536
+	#define M_E		2.71828182845904523536f
 #endif
 
 #define BGCOLOR loadBack(-1)
@@ -390,66 +390,67 @@ struct _LFO {
 };
 
 // Maug Filter
+template <typename T>
 struct _Filter {
-	float_4 tk = 0;
-	float_4 tp = 0;
-	float_4 tr = 0;
+	T tk = 0.f;
+	T tp = 0.f;
+	T tr = 0.f;
 
-	float_4 src_k = 0;
-	float_4 src_p = 0;
-	float_4 src_r = 0;
-	float_4 tgt_k = 0;
-	float_4 tgt_p = 0;
-	float_4 tgt_r = 0;
-	float_4 d_k = 0;
-	float_4 d_p = 0;
-	float_4 d_r = 0;
+	T src_k = 0.f;
+	T src_p = 0.f;
+	T src_r = 0.f;
+	T tgt_k = 0.f;
+	T tgt_p = 0.f;
+	T tgt_r = 0.f;
+	T d_k = 0.f;
+	T d_p = 0.f;
+	T d_r = 0.f;
 
-	float_4 x = 0;
-	float_4 y1 = 0;
-	float_4 y2 = 0;
-	float_4 y3 = 0;
-	float_4 y4 = 0;
+	T x = 0.f;
+	T y1 = 0.f;
+	T y2 = 0.f;
+	T y3 = 0.f;
+	T y4 = 0.f;
 
-	float_4 oldx = 0;
-	float_4 oldy1 = 0;
-	float_4 oldy2 = 0;
-	float_4 oldy3 = 0;
-	float_4 oldy4 = 0;
+	T oldx = 0.f;
+	T oldy1 = 0.f;
+	T oldy2 = 0.f;
+	T oldy3 = 0.f;
+	T oldy4 = 0.f;
 
-	float_4 ftype = 0;
-	float_4 cutoff = 0;
-	float_4 res = 0;
-	float_4 outgain = 0;
+	int ftype = 0.f;
+	T cutoff = 0.f;
+	T res = 0.f;
+	T outgain = 0.f;
 
-	float_4 outValue = 0;
+	T outValue = 0.f;
 
 	void init() {
 		outgain = 1.f;
 	}
 
-	void setType(float_4 ftypeV) {
+	void setType(int ftypeV) {
 		ftype = ftypeV;
 	}
 
-	void setCutoff(float_4 cutoffV) {
+	void setCutoff(T cutoffV) {
 		cutoff = cutoffV;
 	}
 
-	void setRes(float_4 resV) {
+	void setRes(T resV) {
 		res = resV;
 	}
 
-	void setGain(float_4 outgainV) {
+	void setGain(T outgainV) {
 		outgain = outgainV;
 	}
 
-	void process(float_4 in, float rate) {
-		float_4 out;
-		float_4 f = 2 * cutoff / rate;
-		tgt_k = 3.6 * f - 1.6 * f * f - 1;
-		tgt_p = (tgt_k + 1) * 0.5;
-		float_4 scale = simd::pow(M_E, (1 - tgt_p) * 1.386249);
+	void process(T in, T rate) {
+		T out = 0.f;
+		T f = 2.f * cutoff / rate;
+		tgt_k = 3.6f * f - 1.6f * f * f - 1.f;
+		tgt_p = (tgt_k + 1.f) * 0.5f;
+		T scale = simd::pow(M_E, (1.f - tgt_p) * 1.386249f);
 		tgt_r = res * scale;
 
 		d_p = tgt_p - src_p;
@@ -479,20 +480,19 @@ struct _Filter {
 		oldy2 = y2;
 		oldy3 = y3;
 
-		if (ftype[0] == 0) {
-			out = y4;
-		}
-		if (ftype[0] == 1) {
-			out = in - y4;
-		}
-		if (ftype[0] == 2) {
-			out = 6 * (y3 - y4);
+		switch (ftype) {
+		case 0:
+			out = y4; break;
+		case 1:
+			out = in - y4; break;
+		default:
+			out = 6.f * (y3 - y4);
 		}
 
 		outValue = out * outgain;
 	}
 
-	float_4 _Out() {
+	T _Out() {
 		return outValue;
 	}
 };
@@ -502,7 +502,7 @@ struct _DCBlock {
 	float_4 ym1 = 0.f;
 
 	float_4 process(float_4 x) {
-		float_4 y = x - xm1 + 0.995 * ym1; xm1 = x; ym1 = y;
+		float_4 y = x - xm1 + 0.995f * ym1; xm1 = x; ym1 = y;
 		return y;
 	}
 };
@@ -519,7 +519,7 @@ struct _Glider {
 };
 
 struct _ModelVFilter {
-	float type = 0.f;
+	int type = 0;
 
 	float_4 cutoff = 1.f;
 	float_4 resonance = 0.f;
@@ -558,18 +558,19 @@ struct _ModelVFilter {
 		delay[2] = stage[1];
 		delay[3] = stage[2];
 
-		if (type == 0.f) {
-			input = stage[3];
-		} else if (type == 1.f) {
-			input -= stage[3];
-		} else {
-			input = 3. * (stage[2] - stage[3]);
+		switch (type) {
+		case 0:
+			input = stage[3]; break;
+		case 1:
+			input -= stage[3]; break;
+		default:
+			input = 3.f * (stage[2] - stage[3]);
 		}
 
 		return input;
 	}
 
-	virtual void setType(float t) {
+	virtual void setType(int t) {
 		type = t;
 	}
 
@@ -893,6 +894,179 @@ struct _ADSR {
 		attackRate = rate;
 		attackCoef = calcCoef(rate, targetRatioA);
 		attackBase = (1.f + targetRatioA) * (1.f - attackCoef);
+	}
+
+	void setDecayRate(float_4 rate) {
+		decayRate = rate;
+		decayCoef = calcCoef(rate, targetRatioDR);
+		decayBase = (sustainLevel - targetRatioDR) * (1.f - decayCoef);
+	}
+
+	void setReleaseRate(float_4 rate) {
+		releaseRate = rate;
+		releaseCoef = calcCoef(rate, targetRatioDR);
+		releaseBase = -targetRatioDR * (1.f - releaseCoef);
+	}
+
+	void setSustainLevel(float_4 level) {
+		sustainLevel = level;
+		decayBase = (sustainLevel - targetRatioDR) * (1.f - decayCoef);
+	}
+
+	void setTargetRatioA(float_4 targetRatio) {
+		for (int i = 0; i < 4; i++) {
+			if (targetRatio[i] < 0.000000001f)
+				targetRatio[i] = 0.000000001f;  // -180 dB
+		}
+		targetRatioA = targetRatio;
+		attackCoef = calcCoef(attackRate, targetRatioA);
+		attackBase = (1.f + targetRatioA) * (1.f - attackCoef);
+	}
+
+	void setTargetRatioDR(float_4 targetRatio) {
+		for (int i = 0; i < 4; i++) {
+			if (targetRatio[i] < 0.000000001f)
+				targetRatio[i] = 0.000000001f;  // -180 dB
+		}
+		targetRatioDR = targetRatio;
+		decayCoef = calcCoef(decayRate, targetRatioDR);
+		releaseCoef = calcCoef(releaseRate, targetRatioDR);
+		decayBase = (sustainLevel - targetRatioDR) * (1.f - decayCoef);
+		releaseBase = -targetRatioDR * (1.f - releaseCoef);
+	}
+};
+
+// Simple DAHDSR
+struct _DAHDSR {
+	int32_4 state = 0;
+	float_4 output = 0.f;
+	int32_4 delayCtr = 0;
+	int32_4 delayTime = 0;
+	float_4 attackRate = 0.f;
+	int32_4 holdCtr = 0;
+	int32_4 holdTime = 0;
+	float_4 decayRate = 0.f;
+	float_4 releaseRate = 0.f;
+	float_4 attackCoef = 0.f;
+	float_4 decayCoef = 0.f;
+	float_4 releaseCoef = 0.f;
+	float_4 sustainLevel = 1.f;
+	float_4 targetRatioA = 0.f;
+	float_4 targetRatioDR = 0.f;
+	float_4 attackBase = 0.f;
+	float_4 decayBase = 0.f;
+	float_4 releaseBase = 0.f;
+
+	enum envState {
+		env_idle = 0,
+		env_delay,
+		env_attack,
+		env_hold,
+		env_decay,
+		env_sustain,
+		env_release
+	};
+
+	void process() {
+		for (int i = 0; i < 4; i++) {
+			switch (state[i]) {
+			case env_idle:		// 0
+				break;
+			case env_delay:		// 1
+				if (delayCtr[i] < delayTime[i]) {
+					delayCtr[i]++;
+				} else {
+					delayCtr[i] = 0;
+					state[i] = env_attack;
+				}
+				break;
+			case env_attack:	// 2
+				output[i] = attackBase[i] + output[i] * attackCoef[i];
+				if (output[i] >= 1.f) {
+					output[i] = 1.f;
+					state[i] = env_hold;
+				}
+				break;
+			case env_hold:		// 3
+				if (holdCtr[i] < holdTime[i]) {
+					holdCtr[i]++;
+				} else {
+					holdCtr[i] = 0;
+					state[i] = env_decay;
+				}
+				break;
+			case env_decay:		// 4
+				output[i] = decayBase[i] + output[i] * decayCoef[i];
+				if (output[i] <= sustainLevel[i]) {
+					output[i] = sustainLevel[i];
+					state[i] = env_sustain;
+				}
+				break;
+			case env_sustain:	// 5
+				break;
+			case env_release:	// 6
+				output[i] = releaseBase[i] + output[i] * releaseCoef[i];
+				if (output[i] <= 0.f) {
+					output[i] = 0.f;
+					state[i] = env_idle;
+				}
+			}
+		}
+	}
+
+	void gate(float_4 gate) {
+		for (int i = 0; i < 4; i++) {
+			if (gate[i] <= 0.f) {
+				if (state[i] != env_idle)
+					state[i] = env_release;
+			} else {
+				if (state[i] == env_idle || state[i] == env_release)
+					state[i] = env_delay;
+			}
+		}
+	}
+
+	void init() {
+		setState(0.f);
+		setDelayTime(0);
+		setAttackRate(0.f);
+		setHoldTime(0);
+		setDecayRate(0.f);
+		setReleaseRate(0.f);
+		setSustainLevel(0.5f);
+		setTargetRatioA(0.3f);
+		setTargetRatioDR(0.0001f);
+	}
+
+	float_4 _Out() {
+		return output;
+	}
+
+	float_4 calcCoef(float_4 rate, float_4 targetRatio) {
+		float_4 result = simd::ifelse(rate <= 0.f, 0.f, exp(-log((1.f + targetRatio) / targetRatio) / rate));
+		return result;
+	}
+
+	void setState(int32_4 stateV) {
+		state = stateV;
+	}
+
+	int32_4 getState() {
+		return state;
+	}
+
+	void setDelayTime(float_4 time) {
+		delayTime = time;
+	}
+
+	void setAttackRate(float_4 rate) {
+		attackRate = rate;
+		attackCoef = calcCoef(rate, targetRatioA);
+		attackBase = (1.f + targetRatioA) * (1.f - attackCoef);
+	}
+
+	void setHoldTime(float_4 time) {
+		holdTime = time;
 	}
 
 	void setDecayRate(float_4 rate) {

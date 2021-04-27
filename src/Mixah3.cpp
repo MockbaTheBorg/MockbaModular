@@ -24,6 +24,8 @@ struct Mixah3 : Module {
 		NUM_LIGHTS
 	};
 
+	bool additive = false;
+
 	Mixah3() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_A_PARAM, 0.f, 1.f, 0.5f, "");
@@ -32,6 +34,22 @@ struct Mixah3 : Module {
 	}
 
 	void process(const ProcessArgs& args) override;
+
+	json_t* dataToJson() override {
+		json_t* rootJ = json_object();
+
+		// Constant Power
+		json_object_set_new(rootJ, "additiveMix", json_integer(additive));
+		return rootJ;
+	}
+
+
+	void dataFromJson(json_t* rootJ) override {
+		// Constant Power
+		json_t* constantPowerJ = json_object_get(rootJ, "additiveMix");
+		if (constantPowerJ)
+			additive = json_integer_value(constantPowerJ);
+	}
 };
 
 void Mixah3::process(const ProcessArgs& args) {
@@ -56,8 +74,10 @@ void Mixah3::process(const ProcessArgs& args) {
 			}
 		}
 	}
-	for (int c = 0; c < 16; c++)
-		mix[c] /= max(1, sum);
+	if (!additive) {
+		for (int c = 0; c < 16; c++)
+			mix[c] /= max(1, sum);
+	}
 
 	// Mix output
 	if (outputs[_MIX_OUTPUT].isConnected()) {
@@ -91,6 +111,24 @@ struct Mixah3Widget : ModuleWidget {
 
 		// Outputs
 		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, Mixah3::_MIX_OUTPUT));
+	}
+
+	struct AdditiveMix : MenuItem {
+		Mixah3* module;
+		void onAction(const event::Action& e) override {
+			module->additive ^= 0x1;
+		}
+	};
+
+	void appendContextMenu(Menu* menu) override {
+		Mixah3* module = dynamic_cast<Mixah3*>(this->module);
+		assert(module);
+
+		menu->addChild(new MenuLabel());
+
+		AdditiveMix* htItem = createMenuItem<AdditiveMix>("Additive Mix", CHECKMARK(module->additive != 0));
+		htItem->module = module;
+		menu->addChild(htItem);
 	}
 };
 

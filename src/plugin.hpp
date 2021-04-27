@@ -46,7 +46,7 @@ struct _Hsw3 : SvgSwitch {
 	}
 };
 
-struct _Port : SVGPort {
+struct _Port : SvgPort {
 	_Port() {
 		setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/port.svg")));
 	}
