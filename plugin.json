@@ -121,15 +121,6 @@
       ]
     },
     {
-      "slug": "ReVoltah",
-      "name": "ReVoltah",
-      "description": "Simple voltage range adapter",
-      "tags": [
-        "Utility",
-        "Polyphonic"
-      ]
-    },
-    {
       "slug": "CZSaw",
       "name": "CZSaw",
       "description": "Simple CZ style SAW oscillator",
@@ -287,7 +278,6 @@
       "name": "Comparator",
       "description": "Simple voltage comparator",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -296,7 +286,6 @@
       "name": "DualBUFFER",
       "description": "Simple BUFFER gates (3 actually)",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -305,7 +294,6 @@
       "name": "DualNOT",
       "description": "Simple NOT gates (3 actually)",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -314,7 +302,6 @@
       "name": "DualOR",
       "description": "Simple OR gates",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -323,7 +310,6 @@
       "name": "DualNOR",
       "description": "Simple NOR gates",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -332,7 +318,6 @@
       "name": "DualAND",
       "description": "Simple AND gates",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -341,7 +326,6 @@
       "name": "DualNAND",
       "description": "Simple NAND gates",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -350,7 +334,6 @@
       "name": "DualXOR",
       "description": "Simple XOR gates",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -359,7 +342,6 @@
       "name": "DualXNOR",
       "description": "Simple XNOR gates",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },
@@ -368,7 +350,6 @@
       "name": "PSelectah",
       "description": "Simple Priority Selector (AND->OR MUX)",
       "tags": [
-		"Logic",
         "Utility"
       ]
     },

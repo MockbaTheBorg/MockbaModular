@@ -3,16 +3,16 @@
 -- Requires premake5.exe to be somewhere reachable via PATH
 -- https://premake.github.io/
 --
-workspace "MockbaVS"
+workspace "VCVPlugin"
 	location "VStudio"
 	configurations { "Release" }
 	platforms { "X64" }
-	startproject "MockbaVS"
+	startproject "VCVPlugin"
 	pic "On"
 	systemversion "10.0.17763.0"
 	characterset "ASCII"
 
-project "MockbaVS"
+project "VCVPlugin"
 	kind "SharedLib"
 	targetname "plugin"
 	language "C++"
@@ -33,5 +33,7 @@ if _ACTION == "clean" then
 	os.rmdir("dep");
 	os.rmdir("dist");
 	os.rmdir("tmp");
+	os.rmdir("out");
+	os.rmdir(".vs");
 	os.remove("plugin.dll");
 end
