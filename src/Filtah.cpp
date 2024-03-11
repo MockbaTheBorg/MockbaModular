@@ -61,7 +61,7 @@ void Filtah::process(const ProcessArgs& args) {
 
 		filter->setType(ftype);
 		filter->setCutoff(cutoff);
-		filter->setRes(res);
+		filter->setRes(resV);
 		filter->setGain(outgain);
 
 		filter->process(inputs[_SP0_INPUT].getVoltageSimd<float_4>(c), args.sampleRate);
