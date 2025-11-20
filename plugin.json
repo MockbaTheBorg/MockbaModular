@@ -108,6 +108,7 @@
       "name": "Holdah",
       "description": "Simple Sample & Hold",
       "tags": [
+		"Dual",
         "Sample and hold"
       ]
     },
@@ -314,6 +315,7 @@
       "name": "DualOR",
       "description": "Simple OR gates",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
@@ -323,6 +325,7 @@
       "name": "DualNOR",
       "description": "Simple NOR gates",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
@@ -332,6 +335,7 @@
       "name": "DualAND",
       "description": "Simple AND gates",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
@@ -341,6 +345,7 @@
       "name": "DualNAND",
       "description": "Simple NAND gates",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
@@ -350,6 +355,7 @@
       "name": "DualXOR",
       "description": "Simple XOR gates",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
@@ -359,6 +365,7 @@
       "name": "DualXNOR",
       "description": "Simple XNOR gates",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
