@@ -135,7 +135,8 @@
       "description": "Simple CZ style SAW oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -144,7 +145,8 @@
       "description": "Simple CZ style SQUARE oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -153,7 +155,8 @@
       "description": "Simple CZ style PULSE oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -207,7 +210,8 @@
       "description": "Simple CZ style oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -216,7 +220,8 @@
       "description": "Simple Moog style TRIANGLE oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -225,7 +230,8 @@
       "description": "Simple Moog style SHARK oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -234,7 +240,8 @@
       "description": "Simple Moog style SAW oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -243,7 +250,8 @@
       "description": "Simple Moog style INVSAW oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -252,7 +260,8 @@
       "description": "Simple Moog style SQUARE .48 oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -261,7 +270,8 @@
       "description": "Simple Moog style SQUARE .29 oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -270,7 +280,8 @@
       "description": "Simple Moog style SQUARE .17 oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
@@ -279,7 +290,8 @@
       "description": "Simple Moog style oscillator",
       "tags": [
         "Oscillator",
-        "Polyphonic"
+        "Polyphonic",
+		"Low-frequency oscillator"
       ]
     },
     {
