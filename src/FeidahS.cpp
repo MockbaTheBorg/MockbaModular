@@ -28,6 +28,8 @@ struct FeidahS : Module {
 	FeidahS() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 1.f, "");
+		configBypass(_LEFT_INPUT, _LEFT_OUTPUT);
+		configBypass(_RIGHT_INPUT, _RIGHT_OUTPUT);
 	}
 
 	void process(const ProcessArgs& args) override;

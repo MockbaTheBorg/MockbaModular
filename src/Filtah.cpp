@@ -33,6 +33,7 @@ struct Filtah : Module {
 		configParam(_SL2_PARAM, 0.f, 100.f, 100.f, "%");
 		configParam(_SL3_PARAM, 0.f, 0.85f, 0.f, "");
 		configParam(_SL5_PARAM, -25.f, 25.f, 0.f, "dB");
+		configBypass(_SP0_INPUT, _SP0_OUTPUT);
 	}
 
 	void process(const ProcessArgs& args) override;
