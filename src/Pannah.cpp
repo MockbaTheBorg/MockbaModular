@@ -27,6 +27,8 @@ struct Pannah : Module {
 	Pannah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.5f, "pan");
+		configBypass(_VOLTAGE_INPUT, _VOLTAGEL_OUTPUT);
+		configBypass(_VOLTAGE_INPUT, _VOLTAGER_OUTPUT);
 	}
 
 	void process(const ProcessArgs& args) override;
