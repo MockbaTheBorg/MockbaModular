@@ -309,6 +309,7 @@
       "name": "DualBUFFER",
       "description": "Simple BUFFER gates (3 actually)",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
@@ -318,6 +319,7 @@
       "name": "DualNOT",
       "description": "Simple NOT gates (3 actually)",
       "tags": [
+		"Dual",
 		"Logic",
         "Utility"
       ]
