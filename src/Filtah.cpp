@@ -3,6 +3,8 @@
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
+static const float LOG_SEMITONE = std::log(1.059f); // semitone ratio, constant, computed once
+
 struct Filtah : Module {
 	enum ParamIds {
 		_SL1_PARAM,		// Type: LP, HP, BP
@@ -27,13 +29,20 @@ struct Filtah : Module {
 
 	_Filter <float_4>fil[4];
 
+	float lastGainParam = NAN;
+	float outgain = 1.f;
+
 	Filtah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam<_FilterMode>(_SL1_PARAM, 0.f, 2.f, 0.f, "");
+		configParam<_FilterMode>(_SL1_PARAM, 0.f, 2.f, 0.f, "Slope");
 		configParam(_SL2_PARAM, 0.f, 100.f, 100.f, "%");
 		configParam(_SL3_PARAM, 0.f, 0.85f, 0.f, "");
 		configParam(_SL5_PARAM, -25.f, 25.f, 0.f, "dB");
-		configBypass(_SP0_INPUT, _SP0_OUTPUT);
+		configInput(_MODC_INPUT, "Cutoff modulation");
+		configInput(_MODR_INPUT, "Resonance modulation");
+		configInput(_SP0_INPUT, "Signal");
+		configOutput(_SP0_OUTPUT, "Signal");
+		configBypass(_SP0_INPUT, _SP0_OUTPUT); // restore bypass
 	}
 
 	void process(const ProcessArgs& args) override;
@@ -44,7 +53,11 @@ void Filtah::process(const ProcessArgs& args) {
 	int ftype = params[_SL1_PARAM].getValue();
 	float sx = 16.f + params[_SL2_PARAM].getValue() * 1.20103f;
 	float res = params[_SL3_PARAM].getValue();
-	float outgain = powf(10.f, params[_SL5_PARAM].getValue() / 20.f);
+	float gainParam = params[_SL5_PARAM].getValue();
+	if (gainParam != lastGainParam) { // powf is only needed when the knob actually moves
+		outgain = powf(10.f, gainParam / 20.f);
+		lastGainParam = gainParam;
+	}
 	// Iterate over each channel
 	int channels = max(inputs[_SP0_INPUT].getChannels(), 1);
 	for (int c = 0; c < channels; c += 4) {
@@ -55,7 +68,7 @@ void Filtah::process(const ProcessArgs& args) {
 		float_4 sxV = sx;
 		if (inputs[_MODC_INPUT].isConnected())
 			sxV *= inputs[_MODC_INPUT].getVoltageSimd<float_4>(c) / 10.f;
-		float_4 cutoff = simd::floor(simd::exp(sxV * simd::log(1.059f)) * 8.17742f);
+		float_4 cutoff = simd::floor(simd::exp(sxV * LOG_SEMITONE) * 8.17742f);
 		float_4 resV = res;
 		if (inputs[_MODR_INPUT].isConnected())
 			resV *= inputs[_MODR_INPUT].getVoltageSimd<float_4>(c) / 10.f;

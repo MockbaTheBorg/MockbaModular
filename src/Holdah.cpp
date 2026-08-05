@@ -25,6 +25,14 @@ struct Holdah : Module {
 
 	Holdah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_TRIGGER1_INPUT, "Trigger 1");
+		configInput(_VOLTAGE1_INPUT, "Voltage 1");
+		configInput(_TRIGGER2_INPUT, "Trigger 2");
+		configInput(_VOLTAGE2_INPUT, "Voltage 2");
+		configOutput(_VOLTAGE1_OUTPUT, "Voltage 1");
+		configOutput(_VOLTAGE2_OUTPUT, "Voltage 2");
+		configBypass(_VOLTAGE1_INPUT, _VOLTAGE1_OUTPUT);
+		configBypass(_VOLTAGE2_INPUT, _VOLTAGE2_OUTPUT);
 	}
 
 	float last1 = 0.f;

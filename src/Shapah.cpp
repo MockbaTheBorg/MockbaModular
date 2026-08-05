@@ -43,6 +43,10 @@ struct Shapah : Module {
 		configParam(_DECAY_PARAM, 0.f, 1.f, 0.5f, "Decay", " ms", LAMBDA_BASE, MIN_TIME * 1000);
 		configParam(_SUSTAIN_PARAM, 0.f, 1.f, 0.5f, "Sustain", "%", 0, 100);
 		configParam(_RELEASE_PARAM, 0.f, 1.f, 0.5f, "Release", " ms", LAMBDA_BASE, MIN_TIME * 1000);
+		configInput(_GATE_INPUT, "Gate");
+		configInput(_RTRG_INPUT, "Retrigger");
+		configOutput(_ADSR_OUTPUT, "ADSR");
+		// Set up clock divider for CV processing
 		cvDivider.setDivision(16);
 	}
 
@@ -50,52 +54,71 @@ struct Shapah : Module {
 };
 
 void Shapah::process(const ProcessArgs& args) {
-	int channels = inputs[_GATE_INPUT].getChannels();
-	int nc;
+    int channels = max(inputs[_GATE_INPUT].getChannels(), 1);
+    
+    // Compute lambdas at reduced rate for efficiency
+    if (cvDivider.process()) {
+        float attackParam = params[_ATTACK_PARAM].getValue();
+        float decayParam = params[_DECAY_PARAM].getValue();
+        float sustainParam = params[_SUSTAIN_PARAM].getValue();
+        float releaseParam = params[_RELEASE_PARAM].getValue();
 
-	// Compute lambdas
-	if (cvDivider.process()) {
-		float attackParam = params[_ATTACK_PARAM].getValue();
-		float decayParam = params[_DECAY_PARAM].getValue();
-		float sustainParam = params[_SUSTAIN_PARAM].getValue();
-		float releaseParam = params[_RELEASE_PARAM].getValue();
+        // Process in groups of 4 channels (SIMD)
+        for (int c = 0; c < channels; c += 4) {
+            int nc = c / 4;
+            
+            // Load parameters into SIMD vectors
+            float_4 attack = attackParam;
+            float_4 decay = decayParam;
+            float_4 sustain = sustainParam;
+            float_4 release = releaseParam;
 
-		for (int c = 0; c < channels; c += 4) {
-			nc = c / 4;
-			// CV
-			float_4 attack = attackParam;
-			float_4 decay = decayParam;
-			float_4 sustain = sustainParam;
-			float_4 release = releaseParam;
+            // Clamp parameters to valid range
+            attack = simd::clamp(attack, 0.0f, 1.0f);
+            decay = simd::clamp(decay, 0.0f, 1.0f);
+            sustain = simd::clamp(sustain, 0.0f, 1.0f);
+            release = simd::clamp(release, 0.0f, 1.0f);
 
-			attack = simd::clamp(attack, 0.f, 1.f);
-			decay = simd::clamp(decay, 0.f, 1.f);
-			sustain = simd::clamp(sustain, 0.f, 1.f);
-			release = simd::clamp(release, 0.f, 1.f);
+            // Calculate exponential time constants
+            attackLambda[nc] = simd::pow(LAMBDA_BASE, -attack) / MIN_TIME;
+            decayLambda[nc] = simd::pow(LAMBDA_BASE, -decay) / MIN_TIME;
+            releaseLambda[nc] = simd::pow(LAMBDA_BASE, -release) / MIN_TIME;
+            this->sustain[nc] = sustain;
+        }
+    }
 
-			attackLambda[nc] = simd::pow(LAMBDA_BASE, -attack) / MIN_TIME;
-			decayLambda[nc] = simd::pow(LAMBDA_BASE, -decay) / MIN_TIME;
-			releaseLambda[nc] = simd::pow(LAMBDA_BASE, -release) / MIN_TIME;
-			this->sustain[nc] = sustain;
-		}
-	}
-
-	float_4 gate[4];
-
-	for (int c = 0; c < channels; c += 4) {
-		nc = c / 4;
-		gate[nc] = inputs[_GATE_INPUT].getVoltageSimd<float_4>(c) >= 1.f;
-		float_4 triggered = trigger[nc].process(inputs[_RTRG_INPUT].getPolyVoltageSimd<float_4>(c));
-		attacking[nc] = simd::ifelse(triggered, float_4::mask(), attacking[nc]);
-		const float attackTarget = 1.2f;
-		float_4 target = simd::ifelse(gate[nc], simd::ifelse(attacking[nc], attackTarget, sustain[nc]), 0.f);
-		float_4 lambda = simd::ifelse(gate[nc], simd::ifelse(attacking[nc], attackLambda[nc], decayLambda[nc]), releaseLambda[nc]);
-		env[nc] += (target - env[nc]) * lambda * args.sampleTime;
-		attacking[nc] = simd::ifelse(env[nc] >= 1.f, float_4::zero(), attacking[nc]);
-		attacking[nc] = simd::ifelse(gate[nc], attacking[nc], float_4::mask());
-		outputs[_ADSR_OUTPUT].setVoltageSimd(10.f * env[nc], c);
-	}
-	outputs[_ADSR_OUTPUT].setChannels(channels);
+    // Process envelope generation
+    for (int c = 0; c < channels; c += 4) {
+        int nc = c / 4;
+        
+        // Gate detection with proper threshold
+        float_4 gate = inputs[_GATE_INPUT].getVoltageSimd<float_4>(c) >= 1.0f;
+        
+        // Retrigger detection
+        float_4 triggered = trigger[nc].process(inputs[_RTRG_INPUT].getPolyVoltageSimd<float_4>(c));
+        attacking[nc] = simd::ifelse(triggered, float_4::mask(), attacking[nc]);
+        
+        // Target and lambda selection based on envelope state
+        const float ATTACK_TARGET = 1.2f;  // Slight overshoot for natural feel
+        float_4 target = simd::ifelse(gate, 
+            simd::ifelse(attacking[nc], ATTACK_TARGET, sustain[nc]), 
+            0.0f);
+        float_4 lambda = simd::ifelse(gate, 
+            simd::ifelse(attacking[nc], attackLambda[nc], decayLambda[nc]), 
+            releaseLambda[nc]);
+        
+        // Update envelope value using exponential approach
+        env[nc] += (target - env[nc]) * lambda * args.sampleTime;
+        
+        // State transitions
+        attacking[nc] = simd::ifelse(env[nc] >= 1.0f, float_4::zero(), attacking[nc]);
+        attacking[nc] = simd::ifelse(gate, attacking[nc], float_4::mask());
+        
+        // Output with standard 10V scaling
+        outputs[_ADSR_OUTPUT].setVoltageSimd(10.0f * env[nc], c);
+    }
+    
+    outputs[_ADSR_OUTPUT].setChannels(channels);
 }
 
 struct ShapahWidget : ModuleWidget {

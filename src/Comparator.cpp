@@ -25,25 +25,33 @@ struct Comparator : Module {
 
 	Comparator() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_A_INPUT, "A");
+		configInput(_B_INPUT, "B");
+		configOutput(_LT_OUTPUT, "A<B");
+		configOutput(_EQ_OUTPUT, "A=B");
+		configOutput(_NE_OUTPUT, "A!=B");
+		configOutput(_GT_OUTPUT, "A>B");
 	}
 
 	void process(const ProcessArgs& args) override;
 };
 
 void Comparator::process(const ProcessArgs& args) {
-	// Get inputs
-	float a = inputs[_A_INPUT].getVoltage();
-	float b = inputs[_B_INPUT].getVoltage();
-	// Calculate results
-	int lt = a < b;
-	int eq = a == b;
-	int ne = a != b;
-	int gt = a > b;
-	// Set outputs
-	outputs[_LT_OUTPUT].setVoltage(lt * 10);
-	outputs[_EQ_OUTPUT].setVoltage(eq * 10);
-	outputs[_NE_OUTPUT].setVoltage(ne * 10);
-	outputs[_GT_OUTPUT].setVoltage(gt * 10);
+    // Get inputs, treating disconnected inputs as 0V
+    float a = inputs[_A_INPUT].isConnected() ? inputs[_A_INPUT].getVoltage() : 0.0f;
+    float b = inputs[_B_INPUT].isConnected() ? inputs[_B_INPUT].getVoltage() : 0.0f;
+    
+    // Calculate results with proper floating-point handling
+    bool lt = a < b;
+    bool eq = a == b;
+    bool gt = a > b;
+    bool ne = !eq;  // More logical: not-equal is simply !equal
+    
+    // Set outputs using proper boolean to voltage conversion
+    outputs[_LT_OUTPUT].setVoltage(lt ? GATE_VOLTAGE : 0.0f);
+    outputs[_EQ_OUTPUT].setVoltage(eq ? GATE_VOLTAGE : 0.0f);
+    outputs[_NE_OUTPUT].setVoltage(ne ? GATE_VOLTAGE : 0.0f);
+    outputs[_GT_OUTPUT].setVoltage(gt ? GATE_VOLTAGE : 0.0f);
 }
 
 struct ComparatorWidget : ModuleWidget {

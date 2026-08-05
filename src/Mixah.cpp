@@ -46,6 +46,11 @@ struct Mixah : Module {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 0.5f, "");
 		configParam<_BPhase>(_PHASE_PARAM, 0.f, 1.f, 0.f, "B Phase");
+		configInput(_MOD_INPUT, "Mix modulation");
+		configInput(_VCA_INPUT, "VCA modulation");
+		configInput(_A_INPUT, "A");
+		configInput(_B_INPUT, "B");
+		configOutput(_MIX_OUTPUT, "Mix");
 	}
 
 	void process(const ProcessArgs& args) override;

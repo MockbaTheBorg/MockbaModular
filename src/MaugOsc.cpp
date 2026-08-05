@@ -27,10 +27,12 @@ struct MaugOsc : Module {
 
 	MaugOsc() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam<_MaugWaveNames>(_WAVE_PARAM, 0, 6, 0, "");
-		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "");
+		configParam<_MaugWaveNames>(_WAVE_PARAM, 0, 6, 0, "Waveform");
+		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "LFO Mode");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
+		configInput(_MODF_INPUT, "Frequency modulation");
+		configOutput(_WAVE_OUTPUT, "Waveform");
 	}
 
 	void onAdd() override;
@@ -41,7 +43,7 @@ struct MaugOsc : Module {
 };
 
 void MaugOsc::onAdd() {
-	osc->init();
+	for (int i = 0; i < 4; i++) osc[i].init(); // init all 4 banks, not just bank 0
 }
 
 void MaugOsc::onReset() {

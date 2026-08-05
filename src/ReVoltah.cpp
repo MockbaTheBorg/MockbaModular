@@ -29,7 +29,9 @@ struct ReVoltah : Module {
 		configParam(_I_MAX, -10.f, 10.f, 10.f, "I maximum");
 		configParam(_O_MIN, -10.f, 10.f, -10.f, "O minimum");
 		configParam(_O_MAX, -10.f, 10.f, 10.f, "O maximum");
-		configBypass(_V_INPUT, _V_OUTPUT);
+		configInput(_V_INPUT, "Voltage input");
+		configOutput(_V_OUTPUT, "Voltage output");
+		configBypass(_V_INPUT, _V_OUTPUT); // restore bypass
 	}
 
 	void process(const ProcessArgs& args) override;

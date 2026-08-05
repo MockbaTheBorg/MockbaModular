@@ -19,8 +19,8 @@ void saveIPAddress(const char* IPAddress) {
 	json_decref(settingsJ);
 }
 
-const char* loadIPAddress() {
-	const char* ret = IP_ADDR;
+std::string loadIPAddress() {
+	std::string ret = IP_ADDR;
 	std::string settingsFilename = asset::user("MockbaModular.json");
 	FILE* file = fopen(settingsFilename.c_str(), "r");
 	if (!file) {
@@ -37,7 +37,7 @@ const char* loadIPAddress() {
 	}
 	json_t* IPAddressJ = json_object_get(settingsJ, "IPAddress");
 	if (IPAddressJ) {
-		ret = json_string_value(IPAddressJ);
+		ret = json_string_value(IPAddressJ); // copy string before settingsJ is freed
 	} else {
 		ret = IP_ADDR;
 		saveIPAddress(IP_ADDR);
@@ -70,6 +70,7 @@ struct UDPClockMaster : Module {
 	WSADATA wsaData;                          // Stuff for WSA functions
 #endif
 	int                  client_s;        // Client socket descriptor
+	unsigned long int    noBlock;         // Non-blocking flag
 	struct sockaddr_in   server_addr;     // Server Internet address
 	char                 out_buf[64];     // Output buffer for data
 	int                  retcode;         // Return code
@@ -82,6 +83,9 @@ struct UDPClockMaster : Module {
 
 	UDPClockMaster() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_CLOCK_INPUT, "Clock");
+		configInput(_RESET_INPUT, "Reset");
+		configLight(_STATUS_LIGHT, "Status");
 	}
 
 	void onAdd() override;
@@ -111,12 +115,21 @@ void UDPClockMaster::onAdd() {
 	// Fill-in server socket's address information
 	server_addr.sin_family = AF_INET;                         // Address family to use
 	server_addr.sin_port = htons(PORT_NUM);                   // Port num to use
-	server_addr.sin_addr.s_addr = inet_addr(loadIPAddress()); // Need this for Broadcast
+	server_addr.sin_addr.s_addr = inet_addr(loadIPAddress().c_str()); // Need this for Broadcast
 
 	// Set socket to use MAC-level broadcast
 	iOptVal = 1;
 	iOptLen = sizeof(int);
 	setsockopt(client_s, SOL_SOCKET, SO_BROADCAST, (char*)&iOptVal, iOptLen);
+
+	// Make client_s non-blocking, so sendto() can't stall the audio thread
+#ifdef ARCH_WIN
+	noBlock = 1;
+	ioctlsocket(client_s, FIONBIO, &noBlock);
+#else
+	int flags = fcntl(client_s, F_GETFL, 0);
+	fcntl(client_s, F_SETFL, flags | O_NONBLOCK);
+#endif
 }
 
 void UDPClockMaster::onRemove() {
@@ -134,7 +147,8 @@ void UDPClockMaster::process(const ProcessArgs& args) {
 		if (reset_was0) {
 			reset_was0 = false;
 			// Assign a message to buffer out_buf
-			strcpy(out_buf, "RESET");
+			strncpy(out_buf, "RESET", sizeof(out_buf) - 1);
+			out_buf[sizeof(out_buf) - 1] = '\0';
 			retcode = sendto(client_s, out_buf, (strlen(out_buf) + 1), 0,
 				(struct sockaddr*) & server_addr, sizeof(server_addr));
 			if (retcode <= 0) {
@@ -150,7 +164,8 @@ void UDPClockMaster::process(const ProcessArgs& args) {
 		if (clock_was0) {
 			clock_was0 = false;
 			// Assign a message to buffer out_buf
-			strcpy(out_buf, "CLOCK");
+			strncpy(out_buf, "CLOCK", sizeof(out_buf) - 1);
+			out_buf[sizeof(out_buf) - 1] = '\0';
 			retcode = sendto(client_s, out_buf, (strlen(out_buf) + 1), 0,
 				(struct sockaddr*) & server_addr, sizeof(server_addr));
 			if (retcode <= 0) {

@@ -7,6 +7,8 @@ using namespace simd;
 
 #define DETUNE_RNG 0.002f	// Osc spread range
 #define EXP_FACTOR -4.f		// Bulge factor for the Exponential Curve
+#define GATE_VOLTAGE 10.0f	// Gate voltage level
+#define GATE_THRESHOLD 1.0f	// Gate threshold level
 
 #ifdef _WIN32
 	#ifndef ARCH_WIN
@@ -171,7 +173,6 @@ struct _MaugOsc {
 	dsp::MinBlepGenerator<16, 16, float_4> sharkMinBlep;
 	dsp::MinBlepGenerator<16, 16, float_4> sawMinBlep;
 	dsp::MinBlepGenerator<16, 16, float_4> sqrMinBlep;
-	dsp::MinBlepGenerator<16, 16, float_4> invsawMinBlep;
 
 	float_4 triValue = 0.f;
 	float_4 sharkValue = 0.f;
@@ -206,7 +207,7 @@ struct _MaugOsc {
 			pulseWidth = 0.17f;
 			break;
 		default:
-			pulseWidth - 0.5f;
+			pulseWidth = 0.5f; // was missing '=', value got discarded
 		}
 	}
 
@@ -216,70 +217,103 @@ struct _MaugOsc {
 		phase += deltaPhase;
 		phase -= simd::floor(phase);
 
-		// Jump sqr when crossing 0, or 1 if backwards
-		float_4 wrapCrossing = -(phase - deltaPhase) / deltaPhase;
-		int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
-		if (wrapMask) {
-			for (int i = 0; i < channels; i++) {
-				if (wrapMask & (1 << i)) {
-					float_4 mask = simd::movemaskInverse<float_4>(1 << i);
-					float p = wrapCrossing[i] - 1.f;
-					float_4 x = mask & 2.f;
-					sqrMinBlep.insertDiscontinuity(p, x);
+		// Only the active wave needs its discontinuity check and generator run, saves work for single-wave modules
+		bool needSqr = (wave == 3 || wave == 4 || wave == 5);
+		bool needSaw = (wave == 2 || wave == 6);
+		bool needShark = (wave == 1);
+
+		if (needSqr) {
+			// Jump sqr when crossing 0, or 1 if backwards
+			float_4 wrapCrossing = -(phase - deltaPhase) / deltaPhase;
+			int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
+			if (wrapMask) {
+				for (int i = 0; i < channels; i++) {
+					if (wrapMask & (1 << i)) {
+						float_4 mask = simd::movemaskInverse<float_4>(1 << i);
+						float p = wrapCrossing[i] - 1.f;
+						float_4 x = mask & 2.f;
+						sqrMinBlep.insertDiscontinuity(p, x);
+					}
+				}
+			}
+
+			// Jump sqr when crossing `pulseWidth`
+			float_4 pulseCrossing = (pulseWidth - (phase - deltaPhase)) / deltaPhase;
+			int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
+			if (pulseMask) {
+				for (int i = 0; i < channels; i++) {
+					if (pulseMask & (1 << i)) {
+						float_4 mask = simd::movemaskInverse<float_4>(1 << i);
+						float p = pulseCrossing[i] - 1.f;
+						float_4 x = mask & -2.f;
+						sqrMinBlep.insertDiscontinuity(p, x);
+					}
 				}
 			}
 		}
 
-		// Jump sqr when crossing `pulseWidth`
-		float_4 pulseCrossing = (pulseWidth - (phase - deltaPhase)) / deltaPhase;
-		int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
-		if (pulseMask) {
-			for (int i = 0; i < channels; i++) {
-				if (pulseMask & (1 << i)) {
-					float_4 mask = simd::movemaskInverse<float_4>(1 << i);
-					float p = pulseCrossing[i] - 1.f;
-					float_4 x = mask & -2.f;
-					sqrMinBlep.insertDiscontinuity(p, x);
+		if (needSaw) {
+			// Jump saw when crossing 0.5
+			float_4 halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;
+			int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
+			if (halfMask) {
+				for (int i = 0; i < channels; i++) {
+					if (halfMask & (1 << i)) {
+						float_4 mask = simd::movemaskInverse<float_4>(1 << i);
+						float p = halfCrossing[i] - 1.f;
+						float_4 x = mask & -2.f;
+						sawMinBlep.insertDiscontinuity(p, x);
+					}
 				}
 			}
 		}
 
-		// Jump saw when crossing 0.5
-		float_4 halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;
-		int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
-		if (halfMask) {
-			for (int i = 0; i < channels; i++) {
-				if (halfMask & (1 << i)) {
-					float_4 mask = simd::movemaskInverse<float_4>(1 << i);
-					float p = halfCrossing[i] - 1.f;
-					float_4 x = mask & -2.f;
-					sawMinBlep.insertDiscontinuity(p, x);
+		if (needShark) {
+			// Shark jumps by +0.5 when crossing phase 0.5, uncorrected until now
+			float_4 sharkCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;
+			int sharkMask = simd::movemask((0 < sharkCrossing) & (sharkCrossing <= 1.f));
+			if (sharkMask) {
+				for (int i = 0; i < channels; i++) {
+					if (sharkMask & (1 << i)) {
+						float_4 mask = simd::movemaskInverse<float_4>(1 << i);
+						float p = sharkCrossing[i] - 1.f;
+						float_4 x = mask & 0.5f;
+						sharkMinBlep.insertDiscontinuity(p, x);
+					}
 				}
 			}
 		}
 
-		// Tri
-		triValue = tri(phase);
-		triValue += triMinBlep.process();
-
-		// Shark
-		sharkValue = shark(phase);
-		sharkValue += sharkMinBlep.process();
-
-		// Saw
-		sawValue = saw(phase);
-		sawValue += sawMinBlep.process();
-
-		// Square
-		sqrValue = sqr(phase);
-		sqrValue += sqrMinBlep.process();
-
-		sqrFilter.setCutoffFreq(20.f * deltaTime);
-		sqrFilter.process(sqrValue);
-		sqrValue = sqrFilter.highpass() * 0.95f;
-
-		// InvSaw
-		invsawValue = -sawValue;
+		switch (wave) {
+		case 0:
+			triValue = tri(phase);
+			triValue += triMinBlep.process();
+			break;
+		case 1:
+			sharkValue = shark(phase);
+			sharkValue += sharkMinBlep.process();
+			break;
+		case 2:
+			sawValue = saw(phase);
+			sawValue += sawMinBlep.process();
+			break;
+		case 3:
+		case 4:
+		case 5:
+			sqrValue = sqr(phase);
+			sqrValue += sqrMinBlep.process();
+			sqrFilter.setCutoffFreq(20.f * deltaTime);
+			sqrFilter.process(sqrValue);
+			sqrValue = sqrFilter.highpass() * 0.95f;
+			break;
+		case 6:
+			sawValue = saw(phase);
+			sawValue += sawMinBlep.process();
+			invsawValue = -sawValue;
+			break;
+		default:
+			break;
+		}
 	}
 
 	float_4 tri(float_4 phase) {
@@ -363,30 +397,38 @@ struct _MaugOsc {
 
 // Maug LFO
 struct _LFO {
-	float phase = 0.f;
-	float outTriangle = 0.f;
-	float outSquare = 0.f;
-	float freq = 0.f;
+    float phase = 0.f;
+    float outTriangle = 0.f;
+    float outSquare = 0.f;
+    float freq = 0.f;
 
-	void process(float delta, float speed) {
-		freq = .05f + 199.95f * speed;
-		float deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
-		phase += deltaPhase;
-		phase -= simd::floor(phase);
+    void process(float delta, float speed) {
+        freq = 0.05f + 199.95f * speed;
+        float deltaPhase = simd::clamp(freq * delta, 1e-6f, 0.35f);
+        phase += deltaPhase;
+        
+        // More efficient phase wrapping
+        if (phase >= 1.f) phase -= 1.f;
+        
+        // Optimized triangle wave generation
+        float scaledPhase = phase * 4.f;
+        if (scaledPhase <= 2.f) {
+            outTriangle = scaledPhase - 1.f;  // Rising edge: -1 to 1
+        } else {
+            outTriangle = 3.f - scaledPhase;  // Falling edge: 1 to -1
+        }
+        
+        // Square wave from triangle sign
+        outSquare = (outTriangle >= 0.f) ? 1.f : -1.f;
+    }
 
-		float a = phase * 4.f;
-		float b = 4.f - a;
-		outTriangle = min(a, b) - 1;
-		outSquare = sgn(outTriangle);
-	}
+    float _Triangle() {
+        return outTriangle;
+    }
 
-	float _Triangle() {
-		return outTriangle;
-	}
-
-	float _Square() {
-		return outSquare;
-	}
+    float _Square() {
+        return outSquare;
+    }
 };
 
 // Maug Filter
@@ -395,16 +437,6 @@ struct _Filter {
 	T tk = 0.f;
 	T tp = 0.f;
 	T tr = 0.f;
-
-	T src_k = 0.f;
-	T src_p = 0.f;
-	T src_r = 0.f;
-	T tgt_k = 0.f;
-	T tgt_p = 0.f;
-	T tgt_r = 0.f;
-	T d_k = 0.f;
-	T d_p = 0.f;
-	T d_r = 0.f;
 
 	T x = 0.f;
 	T y1 = 0.f;
@@ -416,9 +448,8 @@ struct _Filter {
 	T oldy1 = 0.f;
 	T oldy2 = 0.f;
 	T oldy3 = 0.f;
-	T oldy4 = 0.f;
 
-	int ftype = 0.f;
+	int ftype = 0;
 	T cutoff = 0.f;
 	T res = 0.f;
 	T outgain = 0.f;
@@ -438,7 +469,7 @@ struct _Filter {
 	}
 
 	void setRes(T resV) {
-		res = resV;
+		res = simd::clamp(resV, 0.f, 1.f); // headroom above the knob's max for CV-driven self-osc, but bounded
 	}
 
 	void setGain(T outgainV) {
@@ -446,30 +477,22 @@ struct _Filter {
 	}
 
 	void process(T in, T rate) {
-		T out = 0.f;
-		T f = 2.f * cutoff / rate;
-		tgt_k = 3.6f * f - 1.6f * f * f - 1.f;
-		tgt_p = (tgt_k + 1.f) * 0.5f;
-		T scale = simd::pow(M_E, (1.f - tgt_p) * 1.386249f);
-		tgt_r = res * scale;
+		// Recompute target coefficients every sample so CV modulation isn't quantized to a block
+		T f = simd::clamp(2.f * cutoff / rate, 0.f, 0.99f); // keep in range the tgt_k/tgt_p approximation is valid for
+		T tgt_k = 3.6f * f - 1.6f * f * f - 1.f;
+		T tgt_p = (tgt_k + 1.f) * 0.5f;
+		T scale = simd::exp((1.f - tgt_p) * 1.386249f);  // More efficient than pow
+		T tgt_r = res * scale;
 
-		d_p = tgt_p - src_p;
-		tp = src_p;
-		src_p = tgt_p;
-		d_k = tgt_k - src_k;
-		tk = src_k;
-		src_k = tgt_k;
-		d_r = tgt_r - src_r;
-		tr = src_r;
-		src_r = tgt_r;
+		// One-pole smoothing towards the target avoids zipper noise on knob changes
+		const float smoothTime = 0.001f; // 1 ms
+		T smooth = 1.f - simd::exp(-1.f / (smoothTime * rate));
+		tk += (tgt_k - tk) * smooth;
+		tp += (tgt_p - tp) * smooth;
+		tr += (tgt_r - tr) * smooth;
 
-		tk += d_k;
-		tp += d_p;
-		tr += d_r;
-
-		//filter
-		x = in - tr * y4;
-
+		// Filter processing
+		T x = in - tr * y4 + 1e-20f; // tiny DC bias keeps y1..y4 out of denormal range on silence
 		y1 = x * tp + oldx * tp - tk * y1;
 		y2 = y1 * tp + oldy1 * tp - tk * y2;
 		y3 = y2 * tp + oldy2 * tp - tk * y3;
@@ -482,14 +505,12 @@ struct _Filter {
 
 		switch (ftype) {
 		case 0:
-			out = y4; break;
+			outValue = y4 * outgain; break;
 		case 1:
-			out = in - y4; break;
+			outValue = (in - y4) * outgain; break;
 		default:
-			out = 6.f * (y3 - y4);
+			outValue = 6.f * (y3 - y4) * outgain;
 		}
-
-		outValue = out * outgain;
 	}
 
 	T _Out() {
@@ -550,8 +571,10 @@ struct _ModelVFilter {
 		stage[2] = stage[1] * p + delay[2] * p - k * stage[2];
 		stage[3] = stage[2] * p + delay[3] * p - k * stage[3];
 
-		// Clipping band-limited sigmoid
-		stage[3] -= (stage[3] * stage[3] * stage[3]) / 6.0f;
+		// Clipping band-limited sigmoid, only valid/stable up to |x|~1.4; hard-clamp beyond that
+		// so self-oscillation stays bounded instead of the cubic term making it worse
+		float_4 s3 = simd::clamp(stage[3], -1.4f, 1.4f);
+		stage[3] = simd::clamp(stage[3] - (s3 * s3 * s3) / 6.0f, -4.f, 4.f);
 
 		delay[0] = x;
 		delay[1] = stage[0];
@@ -575,7 +598,8 @@ struct _ModelVFilter {
 	}
 
 	virtual void setResonance(float r) {
-		resonance = r * (t2 + 6.0f * t1) / (t2 - 6.0f * t1);
+		// 1.4x headroom above the raw formula so max resonance can cross the self-oscillation threshold
+		resonance = 1.4f * r * (t2 + 6.0f * t1) / (t2 - 6.0f * t1);
 	}
 
 	virtual void setCutoff(float_4 c) {
@@ -768,22 +792,26 @@ struct _CZWave {
 struct _PinkNoise {
 	int frame = -1;
 	float_4 values[8] = {};
-
+	
 	float_4 _Out() {
 		int lastFrame = frame;
 		frame++;
-		if (frame >= (1 << 8))
+		if (frame >= 256)  // More readable than (1 << 8)
 			frame = 0;
 		int diff = lastFrame ^ frame;
-
-		float_4 sum = 0.f;
+		
+		float_4 sum = values[0] + values[1] + values[2] + values[3] + 
+					  values[4] + values[5] + values[6] + values[7];
+		
+		// Only update changed generators and adjust sum
 		for (int i = 0; i < 8; i++) {
 			if (diff & (1 << i)) {
+				float_4 oldValue = values[i];
 				values[i] = random::uniform() - 0.5f;
+				sum += values[i] - oldValue;  // Update sum incrementally
 			}
-			sum += values[i];
 		}
-		return sum / 2.f;
+		return sum * 0.125f;  // Division by 8, more precise scaling
 	}
 };
 
@@ -891,24 +919,28 @@ struct _ADSR {
 	}
 
 	void setAttackRate(float_4 rate) {
+		if (simd::movemask(rate == attackRate) == 0xF) return; // exp/log below only needed when the rate actually changes
 		attackRate = rate;
 		attackCoef = calcCoef(rate, targetRatioA);
 		attackBase = (1.f + targetRatioA) * (1.f - attackCoef);
 	}
 
 	void setDecayRate(float_4 rate) {
+		if (simd::movemask(rate == decayRate) == 0xF) return;
 		decayRate = rate;
 		decayCoef = calcCoef(rate, targetRatioDR);
 		decayBase = (sustainLevel - targetRatioDR) * (1.f - decayCoef);
 	}
 
 	void setReleaseRate(float_4 rate) {
+		if (simd::movemask(rate == releaseRate) == 0xF) return;
 		releaseRate = rate;
 		releaseCoef = calcCoef(rate, targetRatioDR);
 		releaseBase = -targetRatioDR * (1.f - releaseCoef);
 	}
 
 	void setSustainLevel(float_4 level) {
+		if (simd::movemask(level == sustainLevel) == 0xF) return;
 		sustainLevel = level;
 		decayBase = (sustainLevel - targetRatioDR) * (1.f - decayCoef);
 	}
@@ -918,6 +950,7 @@ struct _ADSR {
 			if (targetRatio[i] < 0.000000001f)
 				targetRatio[i] = 0.000000001f;  // -180 dB
 		}
+		if (simd::movemask(targetRatio == targetRatioA) == 0xF) return;
 		targetRatioA = targetRatio;
 		attackCoef = calcCoef(attackRate, targetRatioA);
 		attackBase = (1.f + targetRatioA) * (1.f - attackCoef);
@@ -928,6 +961,7 @@ struct _ADSR {
 			if (targetRatio[i] < 0.000000001f)
 				targetRatio[i] = 0.000000001f;  // -180 dB
 		}
+		if (simd::movemask(targetRatio == targetRatioDR) == 0xF) return;
 		targetRatioDR = targetRatio;
 		decayCoef = calcCoef(decayRate, targetRatioDR);
 		releaseCoef = calcCoef(releaseRate, targetRatioDR);
@@ -1411,6 +1445,712 @@ struct _FilterMode : ParamQuantity {
 			result = "???";
 		}
 		return result;
+	}
+};
+
+// Shared scaffolding for the 2-input Dual gate modules (AND/OR/NAND/NOR/XOR/XNOR)
+// Only the boolean op and panel SVG differ between them.
+enum class _GateOp2 { AND, OR, NAND, NOR, XOR, XNOR };
+
+inline const char* _dualGate2Svg(_GateOp2 op) {
+	switch (op) {
+	case _GateOp2::AND:  return "res/DualAND.svg";
+	case _GateOp2::OR:   return "res/DualOR.svg";
+	case _GateOp2::NAND: return "res/DualNAND.svg";
+	case _GateOp2::NOR:  return "res/DualNOR.svg";
+	case _GateOp2::XOR:  return "res/DualXOR.svg";
+	case _GateOp2::XNOR: return "res/DualXNOR.svg";
+	}
+	return "";
+}
+
+template <_GateOp2 Op>
+struct _DualGate2 : Module {
+	enum InputIds {
+		_A1_INPUT,
+		_B1_INPUT,
+		_A2_INPUT,
+		_B2_INPUT,
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		_Q1_OUTPUT,
+		_Q2_OUTPUT,
+		NUM_OUTPUTS
+	};
+	enum ParamIds {
+		NUM_PARAMS
+	};
+	enum LightIds {
+		NUM_LIGHTS
+	};
+
+	_DualGate2() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_A1_INPUT, "A1");
+		configInput(_B1_INPUT, "B1");
+		configInput(_A2_INPUT, "A2");
+		configInput(_B2_INPUT, "B2");
+		configOutput(_Q1_OUTPUT, "Q1");
+		configOutput(_Q2_OUTPUT, "Q2");
+	}
+
+	static bool eval(bool a, bool b) {
+		switch (Op) {
+		case _GateOp2::AND:  return a && b;
+		case _GateOp2::OR:   return a || b;
+		case _GateOp2::NAND: return !(a && b);
+		case _GateOp2::NOR:  return !(a || b);
+		case _GateOp2::XOR:  return a != b;
+		case _GateOp2::XNOR: return a == b;
+		}
+		return false;
+	}
+
+	void process(const ProcessArgs& args) override {
+		// Get inputs, treating disconnected inputs as false (0V)
+		bool a1 = inputs[_A1_INPUT].isConnected() ?
+			(inputs[_A1_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+		bool b1 = inputs[_B1_INPUT].isConnected() ?
+			(inputs[_B1_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+		bool a2 = inputs[_A2_INPUT].isConnected() ?
+			(inputs[_A2_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+		bool b2 = inputs[_B2_INPUT].isConnected() ?
+			(inputs[_B2_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+
+		bool q1 = eval(a1, b1);
+		bool q2 = eval(a2, b2);
+
+		outputs[_Q1_OUTPUT].setVoltage(q1 ? GATE_VOLTAGE : 0.0f);
+		outputs[_Q2_OUTPUT].setVoltage(q2 ? GATE_VOLTAGE : 0.0f);
+	}
+};
+
+template <_GateOp2 Op>
+struct _DualGate2Widget : ModuleWidget {
+	_DualGate2Widget(_DualGate2<Op>* module) {
+		setModule(module);
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, _dualGate2Svg(Op))));
+		addChild(panel);
+
+		// Screws
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, _DualGate2<Op>::_A1_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, _DualGate2<Op>::_B1_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, _DualGate2<Op>::_A2_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, _DualGate2<Op>::_B2_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, _DualGate2<Op>::_Q1_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, _DualGate2<Op>::_Q2_OUTPUT));
+	}
+};
+
+// Shared scaffolding for the single-wave Casio CZ oscillator modules.
+// Only the waveform, panel SVG, and a couple of optional features (LFO mode, DC block) differ between them.
+enum class _CZWaveOp { Saw, Square, Pulse, DblSine, SawPulse, Reso1, Reso2, Reso3 };
+
+inline float_4 _czWaveEval(_CZWaveOp op, _CZWave<float_4>& osc, float_4 phase, float_4 shape) {
+	switch (op) {
+	case _CZWaveOp::Saw:      return osc.Saw(phase, shape);
+	case _CZWaveOp::Square:   return osc.Square(phase, shape);
+	case _CZWaveOp::Pulse:    return osc.Pulse(phase, shape);
+	case _CZWaveOp::DblSine:  return osc.DblSine(phase, shape);
+	case _CZWaveOp::SawPulse: return osc.SawPulse(phase, shape);
+	case _CZWaveOp::Reso1:    return osc.Reso1(phase, shape);
+	case _CZWaveOp::Reso2:    return osc.Reso2(phase, shape);
+	case _CZWaveOp::Reso3:    return osc.Reso3(phase, shape);
+	}
+	return 0.f;
+}
+
+inline const char* _czWaveSvg(_CZWaveOp op) {
+	switch (op) {
+	case _CZWaveOp::Saw:      return "res/CZSaw.svg";
+	case _CZWaveOp::Square:   return "res/CZSquare.svg";
+	case _CZWaveOp::Pulse:    return "res/CZPulse.svg";
+	case _CZWaveOp::DblSine:  return "res/CZDblSine.svg";
+	case _CZWaveOp::SawPulse: return "res/CZSawPulse.svg";
+	case _CZWaveOp::Reso1:    return "res/CZReso1.svg";
+	case _CZWaveOp::Reso2:    return "res/CZReso2.svg";
+	case _CZWaveOp::Reso3:    return "res/CZReso3.svg";
+	}
+	return "";
+}
+
+template <_CZWaveOp Op>
+struct _CZOscVoice : _MMOsc {
+	_CZWave<float_4> osc;
+
+	float_4 oscStep(float_4 phase, float_4 shape, int wave) override {
+		return _czWaveEval(Op, osc, phase, shape);
+	}
+};
+
+// LFO-capable group: CZSaw, CZSquare, CZPulse (LFO on/off switch, no DC block)
+template <_CZWaveOp Op>
+struct _CZOscLFO : Module {
+	enum ParamIds {
+		_LFO_PARAM,
+		_FREQ_PARAM,
+		_FINE_PARAM,
+		_SHAPE_PARAM,
+		NUM_PARAMS
+	};
+	enum InputIds {
+		_MODF_INPUT,
+		_MODS_INPUT,
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		_WAVE_OUTPUT,
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+		NUM_LIGHTS
+	};
+
+	_CZOscVoice<Op> osc[4];
+
+	_CZOscLFO() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "LFO Mode");
+		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
+		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
+		configParam(_SHAPE_PARAM, 0.f, 1.f, 0.f, "Shape");
+		configInput(_MODF_INPUT, "Frequency modulation");
+		configInput(_MODS_INPUT, "Shape modulation");
+		configOutput(_WAVE_OUTPUT, "Waveform");
+	}
+
+	void onAdd() override {
+		for (int i = 0; i < 4; i++) osc[i].init(); // init all 4 banks, not just bank 0
+	}
+
+	void onReset() override {
+		onAdd();
+	}
+
+	void process(const ProcessArgs& args) override {
+		// Get the frequency parameters
+		float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
+		// LFO mode
+		if (params[_LFO_PARAM].getValue())
+			freqParam = (freqParam * 2) - 5;
+		freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
+		// Get the shape parameter
+		float shapeParam = params[_SHAPE_PARAM].getValue();
+		// Iterate over each channel
+		int channels = max(inputs[_MODF_INPUT].getChannels(), 1);
+		for (int c = 0; c < channels; c += 4) {
+			// Get the oscillator
+			auto* oscillator = &osc[c / 4];
+			// Set the pitch
+			float_4 pitch = freqParam;
+			pitch += inputs[_MODF_INPUT].template getVoltageSimd<float_4>(c);
+			oscillator->setPitch(pitch, 1.f);
+			// Set the shape
+			float_4 shape = shapeParam;
+			if (inputs[_MODS_INPUT].isConnected())
+				shape *= inputs[_MODS_INPUT].template getVoltageSimd<float_4>(c) / 10.f;
+			oscillator->setShape(shape);
+			// Process and output
+			oscillator->process(args.sampleTime);
+			float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
+			outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out() + off, c);
+		}
+		outputs[_WAVE_OUTPUT].setChannels(channels);
+	}
+};
+
+template <_CZWaveOp Op>
+struct _CZOscLFOWidget : ModuleWidget {
+	_CZOscLFOWidget(_CZOscLFO<Op>* module) {
+		setModule(module);
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, _czWaveSvg(Op))));
+		addChild(panel);
+
+		// Screws
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+		// Knobs
+		addParam(createParamCentered<_Hsw>(mm2px(Vec(5.1, 46.0)), module, _CZOscLFO<Op>::_LFO_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, _CZOscLFO<Op>::_FREQ_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, _CZOscLFO<Op>::_FINE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, _CZOscLFO<Op>::_SHAPE_PARAM));
+
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, _CZOscLFO<Op>::_MODF_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, _CZOscLFO<Op>::_MODS_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, _CZOscLFO<Op>::_WAVE_OUTPUT));
+	}
+};
+
+// Plain group: CZDblSine, CZSawPulse (no LFO switch, no DC block)
+template <_CZWaveOp Op>
+struct _CZOscPlain : Module {
+	enum ParamIds {
+		_FREQ_PARAM,
+		_FINE_PARAM,
+		_SHAPE_PARAM,
+		NUM_PARAMS
+	};
+	enum InputIds {
+		_MODF_INPUT,
+		_MODS_INPUT,
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		_WAVE_OUTPUT,
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+		NUM_LIGHTS
+	};
+
+	_CZOscVoice<Op> osc[4];
+
+	_CZOscPlain() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
+		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
+		configParam(_SHAPE_PARAM, 0.f, 1.f, 0.f, "Shape");
+		configInput(_MODF_INPUT, "Frequency modulation");
+		configInput(_MODS_INPUT, "Shape modulation");
+		configOutput(_WAVE_OUTPUT, "Waveform");
+	}
+
+	void onAdd() override {
+		for (int i = 0; i < 4; i++) osc[i].init(); // init all 4 banks, not just bank 0
+	}
+
+	void onReset() override {
+		onAdd();
+	}
+
+	void process(const ProcessArgs& args) override {
+		// Get the frequency parameters
+		float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
+		freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
+		// Get the shape parameter
+		float shapeParam = params[_SHAPE_PARAM].getValue();
+		// Iterate over each channel
+		int channels = max(inputs[_MODF_INPUT].getChannels(), 1);
+		for (int c = 0; c < channels; c += 4) {
+			// Get the oscillator
+			auto* oscillator = &osc[c / 4];
+			float_4 pitch = freqParam;
+			// Set the pitch
+			pitch += inputs[_MODF_INPUT].template getVoltageSimd<float_4>(c);
+			oscillator->setPitch(pitch, 1.f);
+			// Set the shape
+			float_4 shape = shapeParam;
+			if (inputs[_MODS_INPUT].isConnected())
+				shape *= inputs[_MODS_INPUT].template getVoltageSimd<float_4>(c) / 10.f;
+			oscillator->setShape(shape);
+			// Process and output
+			oscillator->process(args.sampleTime);
+			outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out(), c);
+		}
+		outputs[_WAVE_OUTPUT].setChannels(channels);
+	}
+};
+
+template <_CZWaveOp Op>
+struct _CZOscPlainWidget : ModuleWidget {
+	_CZOscPlainWidget(_CZOscPlain<Op>* module) {
+		setModule(module);
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, _czWaveSvg(Op))));
+		addChild(panel);
+
+		// Screws
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+		// Knobs
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, _CZOscPlain<Op>::_FREQ_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, _CZOscPlain<Op>::_FINE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, _CZOscPlain<Op>::_SHAPE_PARAM));
+
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, _CZOscPlain<Op>::_MODF_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, _CZOscPlain<Op>::_MODS_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, _CZOscPlain<Op>::_WAVE_OUTPUT));
+	}
+};
+
+// Reso group: CZReso1, CZReso2, CZReso3 (no LFO switch, has DC block + context menu)
+template <_CZWaveOp Op>
+struct _CZOscReso : Module {
+	enum ParamIds {
+		_FREQ_PARAM,
+		_FINE_PARAM,
+		_SHAPE_PARAM,
+		NUM_PARAMS
+	};
+	enum InputIds {
+		_MODF_INPUT,
+		_MODS_INPUT,
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		_WAVE_OUTPUT,
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+		NUM_LIGHTS
+	};
+
+	_CZOscVoice<Op> osc[4];
+	_DCBlock dcb[4];
+
+	bool dcBlock = false;
+
+	_CZOscReso() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
+		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency");
+		configParam(_SHAPE_PARAM, 0.f, 1.f, 0.f, "Shape");
+		configInput(_MODF_INPUT, "Frequency modulation");
+		configInput(_MODS_INPUT, "Shape modulation");
+		configOutput(_WAVE_OUTPUT, "Waveform");
+	}
+
+	void onAdd() override {
+		for (int i = 0; i < 4; i++) osc[i].init(); // init all 4 banks, not just bank 0
+	}
+
+	void onReset() override {
+		onAdd();
+	}
+
+	void process(const ProcessArgs& args) override {
+		// Get the frequency parameters
+		float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
+		freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
+		// Get the shape parameter
+		float shapeParam = params[_SHAPE_PARAM].getValue();
+		// Iterate over each channel
+		int channels = max(inputs[_MODF_INPUT].getChannels(), 1);
+		for (int c = 0; c < channels; c += 4) {
+			// Get the oscillator
+			auto* oscillator = &osc[c / 4];
+			float_4 pitch = freqParam;
+			// Set the pitch
+			pitch += inputs[_MODF_INPUT].template getVoltageSimd<float_4>(c);
+			oscillator->setPitch(pitch, 1.f);
+			// Set the shape
+			float_4 shape = shapeParam;
+			if (inputs[_MODS_INPUT].isConnected())
+				shape *= inputs[_MODS_INPUT].template getVoltageSimd<float_4>(c) / 10.f;
+			oscillator->setShape(shape);
+			// Process and output
+			oscillator->process(args.sampleTime);
+			float_4 out;
+			if (dcBlock) {
+				// DC Blocker
+				auto* dcblock = &dcb[c / 4];
+				out = dcblock->process(oscillator->_Out());
+			} else {
+				out = oscillator->_Out();
+			}
+			outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * out, c);
+		}
+		outputs[_WAVE_OUTPUT].setChannels(channels);
+	}
+
+	json_t* dataToJson() override {
+		json_t* rootJ = json_object();
+		json_object_set_new(rootJ, "dcBlock", json_integer(dcBlock));
+		return rootJ;
+	}
+
+	void dataFromJson(json_t* rootJ) override {
+		json_t* dcBlockJ = json_object_get(rootJ, "dcBlock");
+		if (dcBlockJ)
+			dcBlock = json_integer_value(dcBlockJ);
+	}
+};
+
+template <_CZWaveOp Op>
+struct _CZOscResoWidget : ModuleWidget {
+	_CZOscResoWidget(_CZOscReso<Op>* module) {
+		setModule(module);
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, _czWaveSvg(Op))));
+		addChild(panel);
+
+		// Screws
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+		// Knobs
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 57.0)), module, _CZOscReso<Op>::_FREQ_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 68.0)), module, _CZOscReso<Op>::_FINE_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, _CZOscReso<Op>::_SHAPE_PARAM));
+
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, _CZOscReso<Op>::_MODF_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, _CZOscReso<Op>::_MODS_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, _CZOscReso<Op>::_WAVE_OUTPUT));
+	}
+
+	struct DCBlock : MenuItem {
+		_CZOscReso<Op>* module;
+		void onAction(const event::Action& e) override {
+			module->dcBlock ^= 0x1;
+		}
+	};
+
+	void appendContextMenu(Menu* menu) override {
+		_CZOscReso<Op>* module = dynamic_cast<_CZOscReso<Op>*>(this->module);
+		assert(module);
+
+		menu->addChild(new MenuLabel());
+
+		DCBlock* htItem = createMenuItem<DCBlock>("DC Block", CHECKMARK(module->dcBlock != 0));
+		htItem->module = module;
+		menu->addChild(htItem);
+	}
+};
+
+// Shared scaffolding for the single-wave Moog style oscillator modules (MaugSaw, MaugSaw2, MaugShark,
+// MaugSquare, MaugSquare2, MaugSquare3, MaugTriangle). Only the wave index and panel SVG differ.
+enum class _MaugWaveOp { Triangle = 0, Shark = 1, Saw = 2, Square = 3, Square2 = 4, Square3 = 5, InvSaw = 6 };
+
+inline const char* _maugWaveSvg(_MaugWaveOp op) {
+	switch (op) {
+	case _MaugWaveOp::Triangle: return "res/MaugTriangle.svg";
+	case _MaugWaveOp::Shark:    return "res/MaugShark.svg";
+	case _MaugWaveOp::Saw:      return "res/MaugSaw.svg";
+	case _MaugWaveOp::Square:   return "res/MaugSquare.svg";
+	case _MaugWaveOp::Square2:  return "res/MaugSquare2.svg";
+	case _MaugWaveOp::Square3:  return "res/MaugSquare3.svg";
+	case _MaugWaveOp::InvSaw:   return "res/MaugSaw2.svg";
+	}
+	return "";
+}
+
+template <_MaugWaveOp Op>
+struct _MaugOscSingle : Module {
+	enum ParamIds {
+		_LFO_PARAM,
+		_FREQ_PARAM,
+		_FINE_PARAM,
+		NUM_PARAMS
+	};
+	enum InputIds {
+		_MODF_INPUT,
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		_WAVE_OUTPUT,
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+		NUM_LIGHTS
+	};
+
+	_MaugOsc osc[4];
+
+	_MaugOscSingle() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "LFO Mode");
+		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
+		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
+		configInput(_MODF_INPUT, "Frequency modulation");
+		configOutput(_WAVE_OUTPUT, "Waveform");
+	}
+
+	void onAdd() override {
+		for (int i = 0; i < 4; i++) osc[i].init(); // init all 4 banks, not just bank 0
+	}
+
+	void onReset() override {
+		onAdd();
+	}
+
+	void process(const ProcessArgs& args) override {
+		// Get the frequency parameters
+		float freqParam = params[_FREQ_PARAM].getValue() / 12.f;
+		// LFO mode
+		if (params[_LFO_PARAM].getValue())
+			freqParam = (freqParam * 2) - 5;
+		freqParam += dsp::quadraticBipolar(params[_FINE_PARAM].getValue()) * 3.f / 12.f;
+		// Iterate over each channel
+		int channels = max(inputs[_MODF_INPUT].getChannels(), 1);
+		for (int c = 0; c < channels; c += 4) {
+			// Get the oscillator
+			auto* oscillator = &osc[c / 4];
+			oscillator->channels = min(channels - c, 4);
+			float_4 pitch = freqParam;
+			// Set the pitch
+			pitch += inputs[_MODF_INPUT].template getVoltageSimd<float_4>(c);
+			oscillator->setWave((float)static_cast<int>(Op));
+			oscillator->setPitch(pitch, 1.f);
+			// Process and output
+			oscillator->process(args.sampleTime);
+			float_4 off = params[_LFO_PARAM].getValue() * params[_FINE_PARAM].getValue() * 5.f;
+			outputs[_WAVE_OUTPUT].setVoltageSimd(5.f * oscillator->_Out() + off, c);
+		}
+		outputs[_WAVE_OUTPUT].setChannels(channels);
+	}
+};
+
+template <_MaugWaveOp Op>
+struct _MaugOscSingleWidget : ModuleWidget {
+	_MaugOscSingleWidget(_MaugOscSingle<Op>* module) {
+		setModule(module);
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, _maugWaveSvg(Op))));
+		addChild(panel);
+
+		// Screws
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+		// Knobs
+		addParam(createParamCentered<_Hsw>(mm2px(Vec(5.1, 68.0)), module, _MaugOscSingle<Op>::_LFO_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 79.0)), module, _MaugOscSingle<Op>::_FREQ_PARAM));
+		addParam(createParamCentered<_Knob>(mm2px(Vec(5.1, 90.0)), module, _MaugOscSingle<Op>::_FINE_PARAM));
+
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, _MaugOscSingle<Op>::_MODF_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, _MaugOscSingle<Op>::_WAVE_OUTPUT));
+	}
+};
+
+// Shared scaffolding for the binary clock Countah/Dividah modules. Only count direction and panel SVG differ.
+template <bool CountUp>
+struct _ClockDivCounter : Module {
+	enum ParamIds {
+		NUM_PARAMS
+	};
+	enum InputIds {
+		_CLOCK_INPUT,
+		_RESET_INPUT,
+		NUM_INPUTS
+	};
+	enum OutputIds {
+		_BY2_OUTPUT,
+		_BY4_OUTPUT,
+		_BY8_OUTPUT,
+		_BY16_OUTPUT,
+		_BY32_OUTPUT,
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+		NUM_LIGHTS
+	};
+
+	_ClockDivCounter() {
+		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_CLOCK_INPUT, "Clock");
+		configInput(_RESET_INPUT, "Reset");
+		configOutput(_BY2_OUTPUT, "By 2");
+		configOutput(_BY4_OUTPUT, "By 4");
+		configOutput(_BY8_OUTPUT, "By 8");
+		configOutput(_BY16_OUTPUT, "By 16");
+		configOutput(_BY32_OUTPUT, "By 32");
+	}
+
+	uint8_t value = 0;
+	bool clock_was0 = true;
+	bool reset_was0 = true;
+
+	void updateOutputs() {
+		outputs[_BY2_OUTPUT].setVoltage(value & 1 ? GATE_VOLTAGE : 0.0f);
+		outputs[_BY4_OUTPUT].setVoltage(value & 2 ? GATE_VOLTAGE : 0.0f);
+		outputs[_BY8_OUTPUT].setVoltage(value & 4 ? GATE_VOLTAGE : 0.0f);
+		outputs[_BY16_OUTPUT].setVoltage(value & 8 ? GATE_VOLTAGE : 0.0f);
+		outputs[_BY32_OUTPUT].setVoltage(value & 16 ? GATE_VOLTAGE : 0.0f);
+	}
+
+	void onAdd() override {
+		clock_was0 = true;
+		reset_was0 = true;
+		value = 0;
+		updateOutputs();
+	}
+
+	void onReset() override {
+		onAdd();
+	}
+
+	void process(const ProcessArgs& args) override {
+		// Process RESET signal with proper threshold
+		if (inputs[_RESET_INPUT].getVoltage() > GATE_THRESHOLD) {
+			if (reset_was0) {
+				reset_was0 = false;
+				onReset();
+				// Update outputs immediately after reset
+				updateOutputs();
+			}
+		} else {
+			reset_was0 = true;
+		}
+
+		// Process CLOCK signal
+		if (inputs[_CLOCK_INPUT].getVoltage() > GATE_THRESHOLD) {
+			if (clock_was0) {
+				clock_was0 = false;
+				if (CountUp)
+					++value;
+				else
+					--value;
+				// Prevent overflow/underflow by masking to 5 bits (since we only use bits 0-4)
+				value &= 0x1F;
+				updateOutputs();
+			}
+		} else {
+			clock_was0 = true;
+		}
+	}
+};
+
+template <bool CountUp>
+struct _ClockDivCounterWidget : ModuleWidget {
+	_ClockDivCounterWidget(_ClockDivCounter<CountUp>* module, const char* svg) {
+		setModule(module);
+		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, BGCOLOR)));
+		SvgWidget* panel = createWidget<SvgWidget>(Vec(0, 0));
+		panel->setSvg(APP->window->loadSvg(asset::plugin(pluginInstance, svg)));
+		addChild(panel);
+
+		// Screws
+		addChild(createWidget<_Screw>(Vec(0, 0)));
+		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+		// Inputs
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 46.0)), module, _ClockDivCounter<CountUp>::_CLOCK_INPUT));
+		addInput(createInputCentered<_Port>(mm2px(Vec(5.1, 57.0)), module, _ClockDivCounter<CountUp>::_RESET_INPUT));
+
+		// Outputs
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 68.0)), module, _ClockDivCounter<CountUp>::_BY2_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 79.0)), module, _ClockDivCounter<CountUp>::_BY4_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 90.0)), module, _ClockDivCounter<CountUp>::_BY8_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 101.0)), module, _ClockDivCounter<CountUp>::_BY16_OUTPUT));
+		addOutput(createOutputCentered<_Port>(mm2px(Vec(5.1, 112.0)), module, _ClockDivCounter<CountUp>::_BY32_OUTPUT));
 	}
 };
 

@@ -43,9 +43,15 @@ struct UDPClockSlave : Module {
 	bool                 was0;
 
 	dsp::PulseGenerator clockPulse, resetPulse;
+	dsp::ClockDivider socketDivider;       // recvfrom is a syscall, no need to poll every sample
 
 	UDPClockSlave() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configOutput(_CLOCK_OUTPUT, "Clock");
+		configOutput(_RESET_OUTPUT, "Reset");
+		configParam(_RESTART_BUTTON, 0.f, 1.f, 0.f, "Restart");
+		configLight(_STATUS_LIGHT, "Status");
+		socketDivider.setDivision(16);
 	}
 
 	void onAdd() override;
@@ -127,14 +133,19 @@ void UDPClockSlave::process(const ProcessArgs& args) {
 	if (params[_RESTART_BUTTON].getValue()) {
 		onReset();
 	}
-	retcode = recvfrom(server_s, in_buf, sizeof(in_buf), 0,
-		(struct sockaddr*) &client_addr, &addr_len);
-	if (retcode > 0) {
-		if(in_buf[0] == 'C') {
-			clockPulse.trigger(.001);
-		}
-		if (in_buf[0] == 'R') {
-			resetPulse.trigger(.001);
+	if (socketDivider.process()) {
+		// Drain whatever queued up since the last poll, bounded so a flood can't stall the audio thread
+		for (int i = 0; i < 16; i++) {
+			addr_len = sizeof(client_addr); // recvfrom needs this set on every call, it's an in/out param
+			retcode = recvfrom(server_s, in_buf, sizeof(in_buf), 0,
+				(struct sockaddr*) &client_addr, &addr_len);
+			if (retcode <= 0) break;
+			if (in_buf[0] == 'C') {
+				clockPulse.trigger(.001);
+			}
+			if (in_buf[0] == 'R') {
+				resetPulse.trigger(.001);
+			}
 		}
 	}
 	bool cPulse = running && clockPulse.process(1.0 / args.sampleRate);

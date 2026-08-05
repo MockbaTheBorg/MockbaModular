@@ -25,20 +25,30 @@ struct DualBUFFER : Module {
 
 	DualBUFFER() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_A1_INPUT, "A1");
+		configInput(_A2_INPUT, "A2");
+		configInput(_A3_INPUT, "A3");
+		configOutput(_Q1_OUTPUT, "Q1");
+		configOutput(_Q2_OUTPUT, "Q2");
+		configOutput(_Q3_OUTPUT, "Q3");
 	}
 
 	void process(const ProcessArgs& args) override;
 };
 
 void DualBUFFER::process(const ProcessArgs& args) {
-	// Get inputs
-	int a1 = inputs[_A1_INPUT].getVoltage() > 0;
-	int a2 = inputs[_A2_INPUT].getVoltage() > 0;
-	int a3 = inputs[_A3_INPUT].getVoltage() > 0;
-	// Set outputs
-	outputs[_Q1_OUTPUT].setVoltage(a1 * 10);
-	outputs[_Q2_OUTPUT].setVoltage(a2 * 10);
-	outputs[_Q3_OUTPUT].setVoltage(a3 * 10);
+    // Treat disconnected inputs as false (0V)
+    bool q1 = inputs[_A1_INPUT].isConnected() ? 
+        (inputs[_A1_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+    bool q2 = inputs[_A2_INPUT].isConnected() ? 
+        (inputs[_A2_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+    bool q3 = inputs[_A3_INPUT].isConnected() ? 
+        (inputs[_A3_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+    
+    // Set outputs
+    outputs[_Q1_OUTPUT].setVoltage(q1 ? GATE_VOLTAGE : 0.0f);
+    outputs[_Q2_OUTPUT].setVoltage(q2 ? GATE_VOLTAGE : 0.0f);
+    outputs[_Q3_OUTPUT].setVoltage(q3 ? GATE_VOLTAGE : 0.0f);
 }
 
 struct DualBUFFERWidget : ModuleWidget {

@@ -51,23 +51,42 @@ struct Selectah : Module {
 	Selectah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam<_InputSelect>(_SELECT_PARAM, 0.f, 3.f, 0.f, "Input");
+		configInput(_SEL_INPUT, "Select");
+		configInput(_A_INPUT, "A");
+		configInput(_B_INPUT, "B");
+		configInput(_C_INPUT, "C");
+		configInput(_D_INPUT, "D");
+		configOutput(_SELECTED_OUTPUT, "Selected");
 	}
 
 	void process(const ProcessArgs& args) override;
 };
 
 void Selectah::process(const ProcessArgs& args) {
+	// Determine which input to select
 	int selection;
 	if (inputs[_SEL_INPUT].isConnected()) {
-		selection = clamp(floor(inputs[_SEL_INPUT].getVoltage() / 2.5f), 0.f, 3.f);
+		// CV control: 0-2.5V = 0, 2.5-5V = 1, 5-7.5V = 2, 7.5V+ = 3
+		float cv = inputs[_SEL_INPUT].getVoltage();
+		selection = (int)clamp(cv / 2.5f, 0.0f, 3.0f);
 	} else {
-		selection = int(params[_SELECT_PARAM].getValue());
+		// Manual control via knob
+		selection = (int)params[_SELECT_PARAM].getValue();
 	}
-	int channels = max(inputs[selection + 1].getChannels(), 1);
-	// Iterate over each channel
-	for (int c = 0; c < channels; ++c) {
-		outputs[_SELECTED_OUTPUT].setVoltage(inputs[selection + 1].getVoltage(c), c);
+
+	// Calculate the actual input index (inputs are offset by 1)
+	int inputIndex = selection + 1;  // _A_INPUT = 1, _B_INPUT = 2, etc.
+
+	// Get channel count from selected input, minimum 1
+	int channels = max(inputs[inputIndex].getChannels(), 1);
+
+	// Copy all channels from selected input to output
+	for (int c = 0; c < channels; c++) {
+		float voltage = inputs[inputIndex].getVoltage(c);
+		outputs[_SELECTED_OUTPUT].setVoltage(voltage, c);
 	}
+
+	// Set output channel count
 	outputs[_SELECTED_OUTPUT].setChannels(channels);
 }
 

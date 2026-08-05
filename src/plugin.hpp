@@ -54,6 +54,9 @@ struct _Port : SvgPort {
 
 // Declare each Model, defined in each module source file
 extern Model* modelBlank;
+extern Model* modelDelayah;
+extern Model* modelChorusah;
+extern Model* modelReverbah;
 extern Model* modelFeidah;
 extern Model* modelFeidahS;
 extern Model* modelFiltah;

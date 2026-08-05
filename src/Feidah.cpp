@@ -26,7 +26,10 @@ struct Feidah : Module {
 	Feidah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 1.f, "");
-		configBypass(_VOLTAGE_INPUT,_VOLTAGE_OUTPUT);
+		configInput(_VOLTAGE_INPUT, "Voltage");
+		configInput(_VCA_INPUT, "VCA");
+		configOutput(_VOLTAGE_OUTPUT, "Voltage");
+		configBypass(_VOLTAGE_INPUT, _VOLTAGE_OUTPUT); // restore bypass
 	}
 
 	void process(const ProcessArgs& args) override;

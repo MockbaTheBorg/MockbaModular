@@ -65,11 +65,14 @@ struct CZOsc : Module {
 
 	CZOsc() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-		configParam<_CZWaveNames>(_WAVE_PARAM, 0, 7, 0, "");
-		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "");
+		configParam<_CZWaveNames>(_WAVE_PARAM, 0, 7, 0, "Waveform");
+		configParam<_OnOff>(_LFO_PARAM, 0, 1, 0, "LFO Mode");
 		configParam(_FREQ_PARAM, -54.f, 54.f, 0.f, "Frequency", " Hz", dsp::FREQ_SEMITONE, dsp::FREQ_C4);
 		configParam(_FINE_PARAM, -1.f, 1.f, 0.f, "Fine frequency / LFO Offset");
 		configParam(_SHAPE_PARAM, 0.f, 1.f, 0.f, "Shape");
+		configInput(_MODF_INPUT, "Frequency modulation");
+		configInput(_MODS_INPUT, "Shape modulation");
+		configOutput(_WAVE_OUTPUT, "Waveform");
 	}
 
 	void onAdd() override;
@@ -80,7 +83,7 @@ struct CZOsc : Module {
 };
 
 void CZOsc::onAdd() {
-	osc->init();
+	for (int i = 0; i < 4; i++) osc[i].init(); // init all 4 banks, not just bank 0
 }
 
 void CZOsc::onReset() {

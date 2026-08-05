@@ -28,8 +28,13 @@ struct FeidahS : Module {
 	FeidahS() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(_KNOB_PARAM, 0.f, 1.f, 1.f, "");
-		configBypass(_LEFT_INPUT, _LEFT_OUTPUT);
-		configBypass(_RIGHT_INPUT, _RIGHT_OUTPUT);
+		configInput(_VCA_INPUT, "VCA");
+		configInput(_LEFT_INPUT, "Left Voltage");
+		configInput(_RIGHT_INPUT, "Right Voltage");
+		configOutput(_LEFT_OUTPUT, "Left Voltage");
+		configOutput(_RIGHT_OUTPUT, "Right Voltage");
+		configBypass(_LEFT_INPUT, _LEFT_OUTPUT); // restore bypass
+		configBypass(_RIGHT_INPUT, _RIGHT_OUTPUT); // restore bypass
 	}
 
 	void process(const ProcessArgs& args) override;
@@ -58,22 +63,25 @@ void FeidahS::process(const ProcessArgs& args) {
 	float outL;
 	float outR;
 	// Iterate over each channel
-	int channels = max(inputs[_LEFT_INPUT].getChannels() , max(inputs[_LEFT_INPUT].getChannels(), 1));
+	int channels = max(inputs[_LEFT_INPUT].getChannels(), max(inputs[_RIGHT_INPUT].getChannels(), 1)); // was checking LEFT twice, RIGHT never counted
 	for (int c = 0; c < channels; ++c) {
-		if (inputs[_VCA_INPUT].isConnected()) {
+		if (!inputs[_LEFT_INPUT].isConnected()) {
+			// Unpatched: act as a constant CV source from the knob, same as Feidah
+			outL = params[_KNOB_PARAM].getValue() * 10;
+		} else if (inputs[_VCA_INPUT].isConnected()) {
 			outL = inputs[_LEFT_INPUT].getPolyVoltage(c) * atten * (inputs[_VCA_INPUT].getPolyVoltage(c) / 10);
-			if (inputs[_RIGHT_INPUT].isConnected()) {
-				outR = inputs[_RIGHT_INPUT].getPolyVoltage(c) * atten * (inputs[_VCA_INPUT].getPolyVoltage(c) / 10);
-			} else {
-				outR = outL;
-			}
 		} else {
 			outL = inputs[_LEFT_INPUT].getPolyVoltage(c) * atten;
-			if (inputs[_RIGHT_INPUT].isConnected()) {
+		}
+
+		if (inputs[_RIGHT_INPUT].isConnected()) {
+			if (inputs[_VCA_INPUT].isConnected())
+				outR = inputs[_RIGHT_INPUT].getPolyVoltage(c) * atten * (inputs[_VCA_INPUT].getPolyVoltage(c) / 10);
+			else
 				outR = inputs[_RIGHT_INPUT].getPolyVoltage(c) * atten;
-			} else {
-				outR = outL;
-			}
+		} else {
+			// Mirror L when only R is unpatched, so one input can drive both outputs
+			outR = outL;
 		}
 		outputs[_LEFT_OUTPUT].setVoltage(outL, c);
 		outputs[_RIGHT_OUTPUT].setVoltage(outR, c);

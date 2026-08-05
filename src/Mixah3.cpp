@@ -31,6 +31,10 @@ struct Mixah3 : Module {
 		configParam(_A_PARAM, 0.f, 1.f, 0.5f, "");
 		configParam(_B_PARAM, 0.f, 1.f, 0.5f, "");
 		configParam(_C_PARAM, 0.f, 1.f, 0.5f, "");
+		configInput(_A_INPUT, "A");
+		configInput(_B_INPUT, "B");
+		configInput(_C_INPUT, "C");
+		configOutput(_MIX_OUTPUT, "Mix");
 	}
 
 	void process(const ProcessArgs& args) override;
@@ -64,7 +68,8 @@ void Mixah3::process(const ProcessArgs& args) {
 			channels = inputs[i].getChannels();
 			maxChannels = max(maxChannels, channels);
 			inputs[i].readVoltages(in);
-			float gain = std::pow(params[i].getValue(), 2.f);
+			float knob = params[i].getValue();
+			float gain = knob * knob; // was std::pow(knob, 2.f), squaring is cheaper
 			sum += gain;
 			for (int c = 0; c < channels; c++) {
 				in[c] *= gain;

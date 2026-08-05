@@ -23,20 +23,29 @@ struct PSelectah : Module {
 
 	PSelectah() {
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+		configInput(_LOW_INPUT, "Low");
+		configInput(_RAISE_INPUT, "Raise");
+		configInput(_HIGH_INPUT, "High");
+		configOutput(_Q_OUTPUT, "Q");
 	}
 
 	void process(const ProcessArgs& args) override;
 };
 
 void PSelectah::process(const ProcessArgs& args) {
-	// Get inputs
-	int low = inputs[_LOW_INPUT].getVoltage() > 0;
-	int raise = inputs[_RAISE_INPUT].getVoltage() > 0;
-	int high = inputs[_HIGH_INPUT].getVoltage() > 0;
-	// Calculate results
-	int q = (low && raise) || high;
-	// Set outputs
-	outputs[_Q_OUTPUT].setVoltage(q * 10);
+    // Get inputs, treating disconnected inputs as false (0V)
+    bool low = inputs[_LOW_INPUT].isConnected() ? 
+        (inputs[_LOW_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+    bool raise = inputs[_RAISE_INPUT].isConnected() ? 
+        (inputs[_RAISE_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+    bool high = inputs[_HIGH_INPUT].isConnected() ? 
+        (inputs[_HIGH_INPUT].getVoltage() > GATE_THRESHOLD) : false;
+    
+    // Calculate priority selector result: HIGH has priority, otherwise LOW && RAISE
+    bool q = high || (low && raise);
+    
+    // Set outputs using proper boolean to voltage conversion
+    outputs[_Q_OUTPUT].setVoltage(q ? GATE_VOLTAGE : 0.0f);
 }
 
 struct PSelectahWidget : ModuleWidget {

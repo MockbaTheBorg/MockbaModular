@@ -41,10 +41,6 @@ struct BlankWidget : ModuleWidget {
 		addChild(createWidget<_Screw>(Vec(box.size.x - RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 	}
 
-	void loadBg() {
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, loadBack(bgSel))));
-	}
-
 	void appendContextMenu(Menu* menu) override;
 };
 
@@ -53,7 +49,12 @@ struct BackMenuValueItem : MenuItem {
 	int bgSel;
 	void onAction(const event::Action& e) override {
 		moduleWidget->bgSel = bgSel;
-		moduleWidget->loadBg();
+		std::string bgPath = loadBack(bgSel);
+		// Refresh every MockbaModular widget currently on the rack, not just this one
+		for (ModuleWidget* w : APP->scene->rack->getModules()) {
+			if (w->model && w->model->plugin == pluginInstance)
+				w->setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, bgPath)));
+		}
 	}
 };
 
