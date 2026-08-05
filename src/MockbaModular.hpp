@@ -64,6 +64,25 @@ float detune();
 float_4 detune4();
 Vec ISPos(float x, float y);
 
+// Shared "no content loaded" spoken alert clip (res/noContent.wav) - plugin-shipped, mono
+// 16-bit only, so no need for a fuller multi-bit-depth WAV loader. Used by any sample-player
+// module (JDOscah, LAOscah, ...) that needs to tell the user its folder/card came up empty.
+struct _AlertClip {
+	std::vector<float> samples;
+	float sampleRate = 44100.f;
+	bool ok = false;
+};
+
+struct _AlertVoice {
+	float readPos = 0.f;
+	bool playing = false;
+	bool started = false;
+	bool gatePrev = false;
+};
+
+_AlertClip loadAlertClip(const std::string& path);
+float stepAlertVoice(_AlertVoice& v, const _AlertClip& clip, bool gateConnected, bool gate, float engineSampleRate);
+
 // simd mixing functions
 float_4 mix2(float_4 s1, float_4 m1, float_4 s2, float_4 m2);
 float_4 mix3(float_4 s1, float_4 m1, float_4 s2, float_4 m2, float_4 s3, float_4 m3);

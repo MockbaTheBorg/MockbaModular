@@ -1,5 +1,7 @@
 // MockbaModular plugins for VCV Rack by Mockba the Borg
 
+#include <cstdio>
+#include <cstring>
 #include "plugin.hpp"
 #include "MockbaModular.hpp"
 
@@ -76,6 +78,85 @@ float_4 detune4() {
 
 Vec ISPos(float x, float y) {
 	return mm2px(Vec(x, 128.5f - y));
+}
+
+_AlertClip loadAlertClip(const std::string& path) {
+	_AlertClip out;
+	FILE* f = fopen(path.c_str(), "rb");
+	if (!f)
+		return out;
+	char id[4];
+	uint32_t chunkSize32;
+	if (fread(id, 1, 4, f) != 4 || memcmp(id, "RIFF", 4) != 0) { fclose(f); return out; }
+	fseek(f, 4, SEEK_CUR); // riff size
+	if (fread(id, 1, 4, f) != 4 || memcmp(id, "WAVE", 4) != 0) { fclose(f); return out; }
+
+	uint16_t numChannels = 1, bitsPerSample = 16;
+	uint32_t sampleRate = 44100;
+	std::vector<int16_t> pcm;
+	while (fread(id, 1, 4, f) == 4 && fread(&chunkSize32, 4, 1, f) == 1) {
+		if (memcmp(id, "fmt ", 4) == 0) {
+			uint16_t audioFormat;
+			if (fread(&audioFormat, 2, 1, f) != 1) break;
+			if (fread(&numChannels, 2, 1, f) != 1) break;
+			if (fread(&sampleRate, 4, 1, f) != 1) break;
+			fseek(f, 6, SEEK_CUR);
+			if (fread(&bitsPerSample, 2, 1, f) != 1) break;
+			long extra = (long)chunkSize32 - 16;
+			if (extra > 0) fseek(f, extra, SEEK_CUR);
+		}
+		else if (memcmp(id, "data", 4) == 0 && bitsPerSample == 16) {
+			size_t n = chunkSize32 / 2;
+			pcm.resize(n);
+			if (fread(pcm.data(), 2, n, f) != n) pcm.clear();
+		}
+		else {
+			fseek(f, chunkSize32, SEEK_CUR);
+		}
+		if (chunkSize32 & 1) fseek(f, 1, SEEK_CUR);
+	}
+	fclose(f);
+	if (pcm.empty() || numChannels < 1)
+		return out;
+	size_t frames = pcm.size() / numChannels;
+	out.samples.resize(frames);
+	for (size_t i = 0; i < frames; i++)
+		out.samples[i] = pcm[i * numChannels] / 32768.f;
+	out.sampleRate = (float)sampleRate;
+	out.ok = true;
+	return out;
+}
+
+// One-shot, native-pitch playback - a spoken message, not a note, so no V/Oct tracking.
+// gateConnected=false free-runs once on the first call, matching how ungated one-shot
+// transients already behave elsewhere in these plugins.
+float stepAlertVoice(_AlertVoice& v, const _AlertClip& clip, bool gateConnected, bool gate, float engineSampleRate) {
+	if (gateConnected) {
+		if (gate && !v.gatePrev) {
+			v.readPos = 0.f;
+			v.playing = true;
+		}
+		v.gatePrev = gate;
+	}
+	else if (!v.started) {
+		v.readPos = 0.f;
+		v.playing = true;
+		v.started = true;
+	}
+	float out = 0.f;
+	if (v.playing && clip.ok && !clip.samples.empty()) {
+		int len = (int)clip.samples.size();
+		int idx0 = (int)v.readPos;
+		if (idx0 >= len - 1) {
+			v.playing = false;
+		}
+		else {
+			float frac = v.readPos - idx0;
+			out = clip.samples[idx0] * (1.f - frac) + clip.samples[idx0 + 1] * frac;
+			v.readPos += clip.sampleRate / engineSampleRate;
+		}
+	}
+	return out;
 }
 
 float_4 mix2(float_4 s1, float_4 m1, float_4 s2, float_4 m2) {
